@@ -66,6 +66,18 @@ class Notification < ApplicationRecord
     'admin.report': {
       filterable: false,
     }.freeze,
+    k_tag_approve_add_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_deny_add_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_approve_delete_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_deny_delete_relation_request: {
+      filterable: true,
+    }.freeze
   }.freeze
 
   TYPES = PROPERTIES.keys.freeze
@@ -94,6 +106,9 @@ class Notification < ApplicationRecord
     belongs_to :report, inverse_of: false
     belongs_to :account_relationship_severance_event, inverse_of: false
     belongs_to :account_warning, inverse_of: false
+    belongs_to :k_tag_relation, inverse_of: :notification ## tagged notification
+    belongs_to :k_tag_add_relation_request, inverse_of: :notification # requested approved denied
+    belongs_to :k_tag_delete_relation_request, inverse_of: :notification
   end
 
   validates :type, inclusion: { in: TYPES }
@@ -116,6 +131,10 @@ class Notification < ApplicationRecord
       mention&.status
     when :poll
       poll&.status
+    when :k_tag_approve_add_relation, :k_tag_deny_add_relation
+      k_tag_add_relation_request.status ## || k_tag
+    when :k_tag_approve_delete_relation, :k_tag_deny_delete_relation
+      k_tag_delete_relation.status
     end
   end
 
@@ -190,6 +209,12 @@ class Notification < ApplicationRecord
       self.from_account_id = activity&.status&.account_id
     when 'Account'
       self.from_account_id = activity&.id
+    when 'KTagRelation'
+      self.from_account_id = activity&.k_tag_relation&.account_id
+    when 'KTagAddRelationRequest'
+      self.from_account_id = activity&.k_tag_add_relation_request&.requester&.id
+    when 'KTagDeleteRelationRequest'
+      self.from_account_id = activity&.k_tag_delete_relation_request&.requester&.id
     when 'AccountRelationshipSeveranceEvent', 'AccountWarning'
       # These do not really have an originating account, but this is mandatory
       # in the data model, and the recipient's account will by definition

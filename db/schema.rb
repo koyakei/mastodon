@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_10_192043) do
+ActiveRecord::Schema[7.1].define(version: 2024_05_24_082412) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -489,6 +489,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_10_192043) do
     t.index ["tag_id"], name: "index_featured_tags_on_tag_id"
   end
 
+  create_table "follow_k_tags", force: :cascade do |t|
+    t.bigint "k_tag_id", null: false
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_follow_k_tags_on_account_id"
+    t.index ["k_tag_id"], name: "index_follow_k_tags_on_k_tag_id"
+  end
+
   create_table "follow_recommendation_mutes", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "target_account_id", null: false
@@ -586,6 +595,56 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_10_192043) do
     t.integer "severity", default: 0, null: false
     t.text "comment", default: "", null: false
     t.index ["ip"], name: "index_ip_blocks_on_ip", unique: true
+  end
+
+  create_table "k_tag_add_relation_requests", force: :cascade do |t|
+    t.bigint "k_tag_id", null: false
+    t.bigint "requester_id", null: false
+    t.bigint "target_account_id", null: false
+    t.bigint "status_id", null: false
+    t.integer "request_status", default: 0, null: false
+    t.text "request_comment", default: "", null: false
+    t.text "review_comment", default: "", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["k_tag_id"], name: "index_k_tag_add_relation_requests_on_k_tag_id"
+    t.index ["requester_id"], name: "index_k_tag_add_relation_requests_on_requester_id"
+    t.index ["status_id"], name: "index_k_tag_add_relation_requests_on_status_id"
+    t.index ["target_account_id", "requester_id", "k_tag_id", "status_id"], name: "idx_on_target_account_id_requester_id_k_tag_id_stat_6d373bf228", unique: true
+    t.index ["target_account_id"], name: "index_k_tag_add_relation_requests_on_target_account_id"
+  end
+
+  create_table "k_tag_delete_relation_requests", force: :cascade do |t|
+    t.bigint "k_tag_relation_id"
+    t.bigint "requester_id", null: false
+    t.text "request_comment", default: "", null: false
+    t.text "review_comment", default: "", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["k_tag_relation_id"], name: "index_k_tag_delete_relation_requests_on_k_tag_relation_id"
+    t.index ["requester_id", "k_tag_relation_id"], name: "idx_on_requester_id_k_tag_relation_id_8cdfcdae27", unique: true
+    t.index ["requester_id"], name: "index_k_tag_delete_relation_requests_on_requester_id"
+  end
+
+  create_table "k_tag_relations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "k_tag_id", null: false
+    t.bigint "status_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_k_tag_relations_on_account_id"
+    t.index ["k_tag_id"], name: "index_k_tag_relations_on_k_tag_id"
+    t.index ["status_id"], name: "index_k_tag_relations_on_status_id"
+  end
+
+  create_table "k_tags", force: :cascade do |t|
+    t.text "name"
+    t.text "description"
+    t.bigint "account_id", null: false
+    t.integer "following_count"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_k_tags_on_account_id"
   end
 
   create_table "list_accounts", force: :cascade do |t|
@@ -1308,6 +1367,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_10_192043) do
   add_foreign_key "favourites", "statuses", name: "fk_b0e856845e", on_delete: :cascade
   add_foreign_key "featured_tags", "accounts", on_delete: :cascade
   add_foreign_key "featured_tags", "tags", on_delete: :cascade
+  add_foreign_key "follow_k_tags", "accounts"
+  add_foreign_key "follow_k_tags", "k_tags"
   add_foreign_key "follow_recommendation_mutes", "accounts", column: "target_account_id", on_delete: :cascade
   add_foreign_key "follow_recommendation_mutes", "accounts", on_delete: :cascade
   add_foreign_key "follow_recommendation_suppressions", "accounts", on_delete: :cascade
@@ -1319,6 +1380,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_10_192043) do
   add_foreign_key "identities", "users", name: "fk_bea040f377", on_delete: :cascade
   add_foreign_key "imports", "accounts", name: "fk_6db1b6e408", on_delete: :cascade
   add_foreign_key "invites", "users", on_delete: :cascade
+  add_foreign_key "k_tag_add_relation_requests", "accounts", column: "requester_id"
+  add_foreign_key "k_tag_add_relation_requests", "accounts", column: "target_account_id"
+  add_foreign_key "k_tag_add_relation_requests", "k_tags"
+  add_foreign_key "k_tag_add_relation_requests", "statuses"
+  add_foreign_key "k_tag_delete_relation_requests", "accounts", column: "requester_id"
+  add_foreign_key "k_tag_delete_relation_requests", "k_tag_relations"
+  add_foreign_key "k_tag_relations", "accounts"
+  add_foreign_key "k_tag_relations", "k_tags"
+  add_foreign_key "k_tag_relations", "statuses"
+  add_foreign_key "k_tags", "accounts"
   add_foreign_key "list_accounts", "accounts", on_delete: :cascade
   add_foreign_key "list_accounts", "follow_requests", on_delete: :cascade
   add_foreign_key "list_accounts", "follows", on_delete: :cascade

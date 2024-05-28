@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class InvitePolicy < ApplicationPolicy
+class ApplicationPolicy < ApplicationPolicy
   def index?
     role.can?(:manage_invites)
   end

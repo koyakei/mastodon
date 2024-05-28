@@ -21,12 +21,22 @@ class SearchService < BaseService
         results[:accounts] = perform_accounts_search! if account_searchable?
         results[:statuses] = perform_statuses_search! if status_searchable?
         results[:hashtags] = perform_hashtags_search! if hashtag_searchable?
+        results[:k_tags] = perform_k_tags_search! if k_tag_searchable?
       end
     end
   end
 
   private
 
+  def perform_k_tags_search!
+    KTagSearchService.new.call(
+      @query,
+      limit: @limit,
+      offset: @offset,
+      exclude_unreviewed: @options[:exclude_unreviewed]
+    )
+  end
+  
   def perform_accounts_search!
     AccountSearchService.new.call(
       @query,
@@ -93,6 +103,10 @@ class SearchService < BaseService
     hashtag_search?
   end
 
+  def k_tag_searchable?
+    k_tag_search?
+  end
+
   def account_search?
     @options[:type].blank? || @options[:type] == 'accounts'
   end
@@ -103,5 +117,9 @@ class SearchService < BaseService
 
   def status_search?
     @options[:type].blank? || @options[:type] == 'statuses'
+  end
+
+  def k_tag_search?
+    @options[:type].blank? || @options[:type] == 'k_tags'
   end
 end

@@ -6,6 +6,21 @@ namespace :api, format: false do
 
   # JSON / REST API
   namespace :v1 do
+    resources :follow_k_tags, only: [:index, :create, :show, :destroy]
+    resources :k_tags
+    resources :k_tag_relations, only: [:index, :create, :show, :destroy]
+    resources :k_tag_add_relation_requet do
+      member do
+        put :approve
+        put :deny
+      end
+    end
+    resources :k_tag_delete_relation_request do
+      member do
+        put :approve
+        put :deny
+      end
+    end
     resources :statuses, only: [:index, :create, :show, :update, :destroy] do
       scope module: :statuses do
         resources :reblogged_by, controller: :reblogged_by_accounts, only: :index
