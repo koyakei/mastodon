@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_24_082412) do
+ActiveRecord::Schema[7.1].define(version: 2024_05_29_082350) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -624,6 +624,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_24_082412) do
     t.index ["k_tag_relation_id"], name: "index_k_tag_delete_relation_requests_on_k_tag_relation_id"
     t.index ["requester_id", "k_tag_relation_id"], name: "idx_on_requester_id_k_tag_relation_id_8cdfcdae27", unique: true
     t.index ["requester_id"], name: "index_k_tag_delete_relation_requests_on_requester_id"
+  end
+
+  create_table "k_tag_follows", force: :cascade do |t|
+    t.bigint "k_tag_id", null: false
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_k_tag_follows_on_account_id"
+    t.index ["k_tag_id"], name: "index_k_tag_follows_on_k_tag_id"
   end
 
   create_table "k_tag_relations", force: :cascade do |t|
@@ -1386,6 +1395,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_24_082412) do
   add_foreign_key "k_tag_add_relation_requests", "statuses"
   add_foreign_key "k_tag_delete_relation_requests", "accounts", column: "requester_id"
   add_foreign_key "k_tag_delete_relation_requests", "k_tag_relations"
+  add_foreign_key "k_tag_follows", "accounts"
+  add_foreign_key "k_tag_follows", "k_tags"
   add_foreign_key "k_tag_relations", "accounts"
   add_foreign_key "k_tag_relations", "k_tags"
   add_foreign_key "k_tag_relations", "statuses"

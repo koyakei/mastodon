@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: follow_k_tags
+# Table name: k_tag_follows
 #
 #  id         :bigint(8)        not null, primary key
 #  k_tag_id   :bigint(8)        not null
@@ -8,8 +8,7 @@
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
-class FollowKTag < ApplicationRecord
-
+class KTagFollow < ApplicationRecord
   include Paginable
   include RelationshipCacheable
   include RateLimitable
@@ -53,6 +52,4 @@ class FollowKTag < ApplicationRecord
   def decrement_cache_counters
     k_tag&.decrement_followe_count!(:followers_count)
   end
-
-
 end

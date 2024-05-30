@@ -44,6 +44,16 @@ module Account::Interactions
       end
     end
 
+    def add_relation_requested_map(target_account_ids, account_id)
+      KTagAddRelationRequest.where(target_account_id: target_account_ids, account_id: account_id).each_with_object({}) do |follow_request, mapping|
+        mapping[follow_request.target_account_id] = {
+          reblogs: follow_request.show_reblogs?,
+          notify: follow_request.notify?,
+          languages: follow_request.languages,
+        }
+      end
+    end
+
     def requested_by_map(target_account_ids, account_id)
       follow_mapping(FollowRequest.where(account_id: target_account_ids, target_account_id: account_id), :account_id)
     end
@@ -82,6 +92,8 @@ module Account::Interactions
 
     has_many :following, -> { order('follows.id desc') }, through: :active_relationships,  source: :target_account
     has_many :followers, -> { order('follows.id desc') }, through: :passive_relationships, source: :account
+    has_many :follow_k_tags
+
 
     with_options class_name: 'SeveredRelationship', dependent: :destroy do
       has_many :severed_relationships, foreign_key: 'local_account_id', inverse_of: :local_account

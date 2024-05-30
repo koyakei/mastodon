@@ -17,8 +17,14 @@ module Account::Associations
     has_many :mentions, inverse_of: :account, dependent: :destroy
     has_many :conversations, class_name: 'AccountConversation', dependent: :destroy, inverse_of: :account
     has_many :scheduled_statuses, inverse_of: :account, dependent: :destroy
-    has_many :k_tag, inverse_of: :account, dependent: :destroy
-    has_many :k_tag_relation, inverse_of: :account, dependent: :destroy
+    has_many :k_tags, inverse_of: :account, dependent: :destroy, through: :k_tag_relations
+    has_many :own_k_tag_relations, inverse_of: :account, dependent: :destroy, class_name: 'KTagRelations'
+   
+    # フォローしているKtag関連ツイート
+    has_many :k_tags, through: :follow_k_tags
+    has_many :k_tag_relations, through: :k_tags
+    has_many :followingby_k_tag_statuses, through: :k_tag_relations, source: :k_tag
+
     # Notifications
     has_many :notifications, inverse_of: :account, dependent: :destroy
     has_one :notification_policy, inverse_of: :account, dependent: :destroy

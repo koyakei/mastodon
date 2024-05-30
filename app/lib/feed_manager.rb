@@ -47,6 +47,8 @@ class FeedManager
       filter_from_mentions?(status, receiver.id)
     when :tags
       filter_from_tags?(status, receiver.id, build_crutches(receiver.id, [status]))
+    when :k_tags
+      filter_from_k_tags?(status, receiver.id, build_crutches(receiver.id, [status]))
     else
       false
     end
@@ -152,6 +154,28 @@ class FeedManager
     end
 
     trim(:list, list.id)
+  end
+
+  def merge_into_k_tag(from_account, k_tag)
+    timeline_key = key(:k_tag, k_tag.id)
+    aggregate    = k_tag.account.user&.aggregates_reblogs?
+    query        = from_account.statuses.list_eligible_visibility.includes(:preloadable_poll, :media_attachments, reblog: :account).limit(FeedManager::MAX_ITEMS / 4)
+
+    if redis.zcard(timeline_key) >= FeedManager::MAX_ITEMS / 4
+      oldest_home_score = redis.zrange(timeline_key, 0, 0, with_scores: true).first.last.to_i
+      query = query.where('id > ?', oldest_home_score)
+    end
+
+    statuses = query.to_a
+    crutches = build_crutches(k_tag.account_id, statuses)
+
+    statuses.each do |status|
+      next if filter_from_home?(status, k_tag.account_id, crutches) || filter_from_list?(status, k_tag)
+
+      add_to_feed(:k_tag, k_tag.id, status, aggregate_reblogs: aggregate)
+    end
+
+    trim(:list, k_tag.id)
   end
 
   # Remove an account's statuses from a home feed
@@ -260,6 +284,11 @@ class FeedManager
     timeline_key = key(:home, account.id)
 
     account.statuses.limit(limit).each do |status|
+      add_to_feed(:home, account.id, status, aggregate_reblogs: aggregate)
+    end
+
+    # following tag populate 
+    account.followingby_k_tag_statuses.limit(limit).each do |status|
       add_to_feed(:home, account.id, status, aggregate_reblogs: aggregate)
     end
 

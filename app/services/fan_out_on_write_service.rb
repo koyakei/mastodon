@@ -58,10 +58,12 @@ class FanOutOnWriteService < BaseService
 
   def fan_out_to_public_recipients!
     deliver_to_hashtag_followers!
+    deliver_to_k_tag_followers!
   end
 
   def fan_out_to_public_streams!
     broadcast_to_hashtag_streams!
+    broadcast_to_k_tag_streams!
     broadcast_to_public_streams!
   end
 
@@ -110,6 +112,14 @@ class FanOutOnWriteService < BaseService
     end
   end
 
+  def deliver_to_k_tag_followers!
+    KTagFollow.where(k_tag_id: @status.k_tags.map(&:id)).select(:id, :account_id).reorder(nil).find_in_batches do |follows|
+      FeedInsertWorker.push_bulk(follows) do |follow|
+        [@status.id, follow.account_id, 'k_tags', { 'update' => update? }]
+      end
+    end
+  end
+
   def deliver_to_lists!
     @account.lists_for_local_distribution.select(:id).reorder(nil).find_in_batches do |lists|
       FeedInsertWorker.push_bulk(lists) do |list|
@@ -130,6 +140,13 @@ class FanOutOnWriteService < BaseService
     @status.tags.map(&:name).each do |hashtag|
       redis.publish("timeline:hashtag:#{hashtag.mb_chars.downcase}", anonymous_payload)
       redis.publish("timeline:hashtag:#{hashtag.mb_chars.downcase}:local", anonymous_payload) if @status.local?
+    end
+  end
+
+  def broadcast_to_k_tag_streams!
+    @status.k_tags.map(&:name).each do |hashtag|
+      redis.publish("timeline:k_tag:#{hashtag.mb_chars.downcase}", anonymous_payload)
+      redis.publish("timeline:k_tag:#{hashtag.mb_chars.downcase}:local", anonymous_payload) if @status.local?
     end
   end
 

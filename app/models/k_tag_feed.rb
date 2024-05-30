@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class TagFeed < PublicFeed
+class KTagFeed < PublicFeed
   LIMIT_PER_MODE = 4
 
   # @param [Tag] tag
@@ -27,12 +27,7 @@ class TagFeed < PublicFeed
     scope = public_scope
 
     scope.merge!(tagged_with_any_scope)
-    scope.merge!(tagged_with_all_scope)
-    scope.merge!(tagged_with_none_scope)
-    scope.merge!(local_only_scope) if local_only?
-    scope.merge!(remote_only_scope) if remote_only?
-    scope.merge!(account_filters_scope) if account?
-    scope.merge!(media_only_scope) if media_only?
+    # scope.merge!(tagged_with_all_scope)
 
     scope.to_a_paginated_by_id(limit, max_id: max_id, since_id: since_id, min_id: min_id)
   end
@@ -40,18 +35,14 @@ class TagFeed < PublicFeed
   private
 
   def tagged_with_any_scope
-    Status.group(:id).tagged_with(tags_for(Array(@tag.name) | Array(options[:any])))
+    Status.group(:id).k_tagged_with([@tag.id])
   end
 
   def tagged_with_all_scope
-    Status.group(:id).tagged_with_all(tags_for(options[:all]))
-  end
-
-  def tagged_with_none_scope
-    Status.group(:id).tagged_with_none(tags_for(options[:none]))
+    Status.group(:id).k_tagged_with_all(tags_for(options[:all]))
   end
 
   def tags_for(names)
-    Tag.matching_name(Array(names).take(LIMIT_PER_MODE)).pluck(:id) if names.present?
+    KTag.matching_name(Array(names).take(LIMIT_PER_MODE)).pluck(:id) if names.present?
   end
 end
