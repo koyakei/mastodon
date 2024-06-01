@@ -6,7 +6,6 @@ namespace :api, format: false do
 
   # JSON / REST API
   namespace :v1 do
-    resources :k_tag_follows, only: [:index, :create, :show, :destroy]
     resources :k_tags
     resources :k_tag_relations, only: [:index, :create, :show, :destroy]
     resources :k_tag_add_relation_requet do
@@ -233,6 +232,7 @@ namespace :api, format: false do
 
     resources :followed_tags, only: [:index]
 
+    resources :followed_k_tags, only: [:index, :create, :show, :destroy]
     resources :lists, only: [:index, :create, :show, :update, :destroy] do
       resource :accounts, only: [:show, :create, :destroy], controller: 'lists/accounts'
     end

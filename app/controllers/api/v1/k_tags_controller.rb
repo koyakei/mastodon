@@ -24,7 +24,6 @@ class Api::V1::KTagsController < Api::BaseController
     render json: @k_tag
   end
 
-
   # POST /k_tags
   def create
     @k_tag = KTag.new(k_tag_params)

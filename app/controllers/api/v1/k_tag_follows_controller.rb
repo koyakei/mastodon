@@ -8,8 +8,9 @@ class Api::V1::KTagFollowsController < ApplicationController
   before_action :check_statuses_limit, only: [:index]
   
 
-  # GET /api/v1/follow_k_tags
+  # GET /api/v1/follow_k_tags ここで自分がフォローしているタグのリストを表示するべきではないのか tagid ktag follow id  知り合ライザー
   def index
+    @account_id = params[:account_id] || current_user&.account_id
     @api_v1_follow_k_tags = KTagFollow.all
   end
 

@@ -26,7 +26,12 @@ class Api::V1::StatusesController < Api::BaseController
   DESCENDANTS_DEPTH_LIMIT = 20
 
   def index
-    @statuses = preload_collection(@statuses, Status)
+    if params.permit(:k_tag_ids).nil?
+      @statuses = preload_collection(@statuses, Status)
+    else
+      @statuses = preload_collection(@statuses, Status.joins(:tag_relations).where(tag_relations: { tag_id: params.permit(:k_tag_ids) }))
+    end
+
     render json: @statuses, each_serializer: REST::StatusSerializer
   end
 
