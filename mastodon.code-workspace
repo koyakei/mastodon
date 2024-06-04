@@ -4,5 +4,8 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"terminal.integrated.shellIntegration.enabled": false,
+		"terminal.integrated.inheritEnv": false
+	}
 }
