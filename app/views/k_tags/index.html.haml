@@ -1,0 +1,24 @@
+%h1 Listing k_tags
+
+%table
+  %thead
+    %tr
+      %th Name
+      %th Description
+      %th Account
+      %th
+      %th
+      %th
+
+  %tbody
+    - @k_tags.each do |k_tag|
+      %tr
+        %td= k_tag.name
+        %td= k_tag.description
+        %td= k_tag.account
+        %td= link_to 'Show', k_tag
+        %td= link_to 'Edit', edit_k_tag_path(k_tag)
+        %td= link_to 'Destroy', k_tag, method: :delete
+%br
+
+= link_to 'New K tag', new_k_tag_path

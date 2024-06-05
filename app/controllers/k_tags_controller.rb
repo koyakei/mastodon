@@ -1,33 +1,39 @@
-class Api::V1::KTagsController < Api::BaseController
+class KTagsController < ApplicationController
   include Authorization
   
-  before_action :set_k_tag, only: %i[ show update destroy ]
-  before_action -> { authorize_if_got_token! :read, :'read:statuses' }, except: [:create, :update, :destroy]
-  before_action -> { doorkeeper_authorize! :write, :'write:statuses' }, only:   [:create, :update, :destroy]
-  before_action :require_user!, except:      [:index, :show]
-  before_action :check_statuses_limit, only: [:index]
+  before_action :authenticate_user!
+  before_action :set_k_tag, only: %i[ show edit update destroy ]
+  # before_action :check_statuses_limit, only: [:index]
 
   # This API was originally unlimited, pagination cannot be introduced without
   # breaking backwards-compatibility. Arbitrarily high number to cover most
   # conversations as quasi-unlimited, it would be too much work to render more
   # than this anyway
   CONTEXT_LIMIT = 4_096
+  
 
   # GET /k_tags
   def index
     @k_tags = KTag.all
-    render json: @k_tags, each_serializer: REST::KTagSerializer
   end
 
   # GET /k_tags/1
   def show
-    render json: @k_tag
+  end
+
+  # GET /k_tags/new
+  def new
+    @k_tag = KTag.new
+  end
+
+  # GET /k_tags/1/edit
+  def edit
   end
 
   # POST /k_tags
   def create
     @k_tag = KTag.new(k_tag_params)
-    
+    @k_tag.account = current_user&.account
     if @k_tag.save
       redirect_to @k_tag, notice: "K tag was successfully created."
     else
@@ -60,9 +66,8 @@ class Api::V1::KTagsController < Api::BaseController
 
     # Only allow a list of trusted parameters through.
     def k_tag_params
-      params.permit(:name, :description, :account_id, :following_count, :ids)
+      params.require(:k_tag).permit(:name, :description)
     end
-
     def check_statuses_limit
       raise(Mastodon::ValidationError) if k_tag_ids.size > DEFAULT_STATUSES_LIMIT
     end

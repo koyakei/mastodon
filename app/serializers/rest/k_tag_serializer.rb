@@ -3,7 +3,7 @@
 class REST::KTagSerializer < ActiveModel::Serializer
   include RoutingHelper
 
-  attributes :name, :url, :history
+  attributes :name, :url
 
   attribute :following, if: :current_user?
 

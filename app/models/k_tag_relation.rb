@@ -15,7 +15,7 @@ class KTagRelation < ApplicationRecord
   belongs_to :status
   has_one :notification, as: :activity, dependent: :destroy
 
-  validates :k_tag_relation_id,  uniquness: { scope: [:k_tag_id, :status_id, :account_id]  }
+  validates_uniqueness_of :k_tag_relation_id, scope: [:k_tag_id, :status_id, :account_id] 
 
   update_index('statuses'){ status }
 end

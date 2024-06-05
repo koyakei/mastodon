@@ -16,7 +16,10 @@ class KTag < ApplicationRecord
   has_many :k_tag_relations
   has_many :statuses, through: :k_tag_relations
   has_many :followers, through: :k_tag_follows, source: :account
-  validate :followers_count, presence: true, numericality: {only_integer: true, greater_than_or_equal_to: 0}
+  attribute :followers_count,      :integer, default: 0
+  attribute :following_count,      :integer, default: 0
+  
+  validates :followers_count, presence: true, numericality: {only_integer: true, greater_than_or_equal_to: 0}
   scope :matches_name, ->(term) { where(arel_table[:name].lower.matches(arel_table.lower("#{sanitize_sql_like(KTag.normalize(term))}%"), nil, true)) } # Search with case-sensitive to use B-tree index
   update_index('k_tags', :self)
   
