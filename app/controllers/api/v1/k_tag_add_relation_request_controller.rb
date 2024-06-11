@@ -1,4 +1,4 @@
-class Api::V1::KTagAddRelationRequesController < Api::BaseController
+class Api::V1::KTagAddRelationRequestController < Api::BaseController
   include Authorization
 
   before_action :set_api_v1_k_tag_add_relation_request, only: %i[ show approve deny destroy ]
@@ -24,9 +24,14 @@ class Api::V1::KTagAddRelationRequesController < Api::BaseController
 
   # POST /api/v1/k_tag_add_relation_reques
   def create
-    k_tag_add_relation_request = KTagAddRelationRequest.new(api_v1_k_tag_add_relation_request_params)
-    if k_tag_add_relation_request.save
-      render json: k_tag_add_relation_request
+    k_tag_add_relation_requests = KTagAddRelationRequest.new(api_v1_k_tag_add_relation_request_params)
+    # タグのオーナーと現在のユーザーが同じだったら、関係性を作成して終了
+    if current_account_id == KTag.find(id: k_tag_add_relation_requests[:k_tag_id]).account_id
+      @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: params[:k_tag_id], status_id: paarams[:status_id])
+      @k_tag_relation.save(account: account, k_tag: k_tag, status: status)
+      render json: k_tag_add_relation_requests
+    elsif k_tag_add_relation_requests.save
+      render json: k_tag_add_relation_requests
     else
       render :new, status: :unprocessable_entity
     end

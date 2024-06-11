@@ -18,6 +18,7 @@ class Api::V1::KTagRelationsController < Api::BaseController
 
   # POST /api/v1/k_tag_relations
   def create
+    authorize  @api_v1_k_tag_relation, create?(KTag.find_by(id: update_create_api_v1_k_tag_relation_params[:k_tag_id]).account_id)
     @api_v1_k_tag_relation = KTagRelation.new(update_create_api_v1_k_tag_relation_params.store(:account_id, current_user&.account_id))
 
     if @api_v1_k_tag_relation.save

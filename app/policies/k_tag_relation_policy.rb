@@ -6,6 +6,10 @@ class KTagAddRelationPolicy < ApplicationPolicy
     owner? || role.can?(:manage_invites)
   end
 
+  def create?(tag_owner_id)
+    record.account_id == tag_owner_id
+  end
+
   private
 
   def owner?

@@ -1,4 +1,4 @@
-class Api::V1::KTagDeleteRelationRequesController < Api::BaseController
+class Api::V1::KTagDeleteRelationRequestController < Api::BaseController
   include Authorization
 
   before_action :set_api_v1_k_tag_delete_relation_request, only: %i[ show approve deny destroy ]
