@@ -88,7 +88,7 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
 
     # Use callbacks to share common setup or constraints between actions.
     def set_api_v1_k_tag_add_relation_request
-      k_tag_add_relation_request = KTagAddRelationRequest.find(params[:id])
+      @k_tag_add_relation_request = KTagAddRelationRequest.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.

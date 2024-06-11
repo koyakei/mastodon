@@ -10,15 +10,15 @@ namespace :api, format: false do
     resources :k_tag_relations, only: [:index, :create, :show, :destroy]
     resources :k_tag_add_relation_requet , only: [:index, :create, :show]do
       member do
-        put :approve
-        put :deny
+        post :approve
+        post :deny
       end
     end
     
     resources :k_tag_delete_relation_request, only: [:index, :create, :show] do
       member do
-        put :approve
-        put :deny
+        post :approve
+        post :deny
       end
     end
     resources :statuses, only: [:index, :create, :show, :update, :destroy] do
