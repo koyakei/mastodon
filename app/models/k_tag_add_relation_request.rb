@@ -24,5 +24,6 @@ class KTagAddRelationRequest < ApplicationRecord
     approved: 1,
     denied: 2
   }
+  scope :owned_requests, ->(account_id) { where(account_id: account_id) }
   validates_uniqueness_of :teacher_id, scope: [:semester_id, :class_id]
 end

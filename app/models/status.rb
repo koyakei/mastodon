@@ -122,13 +122,18 @@ class Status < ApplicationRecord
       SQL
     end
   }
-  scope :k_tagged_with_all, lambda { |tag_ids|
-    Array(tag_ids).map(&:to_i).reduce(self) do |result, id|
+  scope :k_tagged_with_all, lambda { |k_tag_ids|
+    Array(k_tag_ids).map(&:to_i).reduce(self) do |result, id|
       result.where(<<~SQL.squish, k_tag_id: id)
-        EXISTS(SELECT 1 FROM k_tag_relations WHERE k_tag_relations.status_id = statuses.id AND k_tag_relations.k_tag_id = :tag_id)
+        EXISTS(SELECT 1 FROM k_tag_relations WHERE k_tag_relations.status_id = statuses.id AND k_tag_relations.k_tag_id = :k_tag_id)
       SQL
     end
   }
+  has_many :k_tag_delete_relation_requests
+  has_many :k_tag_add_relation_requests
+  
+  # k tag relation についている　追加されているタグを読み込む　それぞれについているadding relation を呼び出す
+  scope :adding_k_tag_relations_yourself, -> (account){ joins(:k_tag_add_relation_requests).where(k_tag_add_relation_requests: { account_id: account.account_id }) }
   scope :tagged_with_none, lambda { |tag_ids|
     where('NOT EXISTS (SELECT * FROM statuses_tags forbidden WHERE forbidden.status_id = statuses.id AND forbidden.tag_id IN (?))', tag_ids)
   }

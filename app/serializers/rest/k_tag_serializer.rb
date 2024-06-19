@@ -1,11 +1,30 @@
 # frozen_string_literal: true
 
 class REST::KTagSerializer < ActiveModel::Serializer
-  include RoutingHelper
 
-  attributes :name, :url
+  attributes :name, :url, :account, :id
 
   attribute :following, if: :current_user?
+
+  has_one :account, serializer: REST::AccountSerializer
+  attribute :owned_k_tag_add_relation_request, if: :k_tag_add_relation_request?
+  attribute :owned_k_tag_add_relation_request, if: :k_tag_delete_relation_request?
+  
+  def owned_k_tag_add_relation_request
+    object.k_tag_add_relation_requests.owned_requests(current_user.account_id).first
+  end
+
+  def k_tag_add_relation_request?
+    object.k_tag_add_relation_requests.owned_requests(current_user.account_id).exists?
+  end
+
+  def owned_k_tag_delete_relation_request
+    object.k_tag_delete_relation_requests.owned_requests(current_user.account_id).first
+  end
+
+  def k_tag_delete_relation_request?
+    object.k_tag_delete_relation_requests.owned_requests(current_user.account_id).exists?
+  end
 
   def url
     k_tag_url(object)

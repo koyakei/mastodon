@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+class KTagRelationshipsPresenter
+  attr_reader :k_tag_add_relation_requests
+  @k_tag_add_relation_requests
+
+  def initialize(k_tag_add_relation_requests )
+    @k_tag_add_relation_requests = k_tag_add_relation_requests
+  end
+end
 class REST::StatusSerializer < ActiveModel::Serializer
   include FormattingHelper
 
@@ -16,6 +24,8 @@ class REST::StatusSerializer < ActiveModel::Serializer
   attribute :bookmarked, if: :current_user?
   attribute :pinned, if: :pinnable?
   has_many :filtered, serializer: REST::FilterResultSerializer, if: :current_user?
+  has_many :k_tag_delete_relation_requests
+  has_many :k_tag_add_relation_requests
 
   attribute :content, unless: :source_requested?
   attribute :text, if: :source_requested?
@@ -28,9 +38,17 @@ class REST::StatusSerializer < ActiveModel::Serializer
   has_many :ordered_mentions, key: :mentions
   has_many :tags
   has_many :emojis, serializer: REST::CustomEmojiSerializer
+  has_many :k_tag_relations, serializer: REST::KTagRelationSerializer,
+   relationships: KTagRelationshipsPresenter.new( :k_tag_add_relation_requests
+  )
+  ## 削除リクエスト　追加リクエスト　何にもされてない関係性
 
   has_one :preview_card, key: :card, serializer: REST::PreviewCardSerializer
   has_one :preloadable_poll, key: :poll, serializer: REST::PollSerializer
+
+  def k_tag_with_relations
+
+  end
 
   def id
     object.id.to_s
