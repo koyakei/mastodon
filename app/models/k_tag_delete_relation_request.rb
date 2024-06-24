@@ -12,7 +12,7 @@
 #
 class KTagDeleteRelationRequest < ApplicationRecord
   belongs_to :k_tag_relation, optional: true
-  belongs_to :requester, clas_name: "Account"
+  belongs_to :requester, class_name: "Account"
   has_one :notification, as: :activity, dependent: :destroy
   scope :owned_requests, ->(account_id) { where(account_id: account_id) }
   

@@ -24,7 +24,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
   attribute :bookmarked, if: :current_user?
   attribute :pinned, if: :pinnable?
   has_many :filtered, serializer: REST::FilterResultSerializer, if: :current_user?
-  has_many :k_tag_delete_relation_requests
+ 
   has_many :k_tag_add_relation_requests
 
   attribute :content, unless: :source_requested?

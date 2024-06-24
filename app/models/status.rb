@@ -129,7 +129,6 @@ class Status < ApplicationRecord
       SQL
     end
   }
-  has_many :k_tag_delete_relation_requests
   has_many :k_tag_add_relation_requests
   
   # k tag relation についている　追加されているタグを読み込む　それぞれについているadding relation を呼び出す
