@@ -15,6 +15,7 @@ class ActivityPub::AddSerializer < ActivityPub::Serializer
       UriSerializer
     when 'FeaturedTag'
       ActivityPub::HashtagSerializer
+    # when 'KTagAddRelationRequest'
     else
       super
     end

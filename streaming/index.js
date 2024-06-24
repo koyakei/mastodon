@@ -602,6 +602,14 @@ const startServer = async () => {
       return onlyMedia ? 'public:remote:media' : 'public:remote';
     case '/api/v1/streaming/hashtag':
       return 'hashtag';
+    case '/api/v1/streaming/k_tag':
+      return 'k_tag';
+    case '/api/v1/streaming/k_tag_relation':
+        return 'k_tag_relation';
+    case '/api/v1/streaming/k_tag_add_relation_request':
+      return 'k_tag_add_relation_request';
+    case '/api/v1/streaming/k_tag_delete_relation_request':
+      return 'k_tag_delete_relation_request';
     case '/api/v1/streaming/hashtag/local':
       return 'hashtag:local';
     case '/api/v1/streaming/direct':

@@ -5,13 +5,25 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
   before_action -> { authorize_if_got_token! :read, :'read:statuses' }, except: [:create, :approve, :deny, :destroy]
   before_action -> { doorkeeper_authorize! :write, :'write:statuses' }, only:   [:create, :approve, :deny, :destroy]
   before_action :require_user!, except:      [:index, :show]
-
+  after_create :stream_and_notify
+  def stream_and_notify
+    # ここでStatusのアップデートストリームをつくる
+    UpdateStatusService.new.call(
+      @status,
+      current_user.account.id,
+      k_tag_add_relation_requests: @status.k_tag_add_relation_requests
+    )
+  end
+  
   before_action :check_get_limit, only: [:index]
    # This API was originally unlimited, pagination cannot be introduced without
   # breaking backwards-compatibility. Arbitrarily high number to cover most
   # conversations as quasi-unlimited, it would be too much work to render more
   # than this anyway
   GET_LIMIT = 4_096
+
+
+ 
 
   # GET /api/v1/k_tag_add_relation_reques
   def index
@@ -31,6 +43,7 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
       @k_tag_relation.save(account: account, k_tag: k_tag, status: status)
       render json: k_tag_add_relation_requests
     elsif k_tag_add_relation_requests.save
+      
       render json: k_tag_add_relation_requests
     else
       render :new, status: :unprocessable_entity

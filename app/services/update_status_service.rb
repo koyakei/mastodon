@@ -16,6 +16,7 @@ class UpdateStatusService < BaseService
   # @option options [String] :spoiler_text
   # @option options [Boolean] :sensitive
   # @option options [String] :language
+  # @option options [String] :k_tag_add_relation_request
   def call(status, account_id, options = {})
     @status                    = status
     @options                   = options
