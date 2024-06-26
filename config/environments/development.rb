@@ -92,6 +92,10 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+  config.hosts << '.ngrok-free.app'
+  config.hosts << 'koyakei.f5.si'
+  config.hosts << '.local'
+  config.hosts << '.asse.devtunnels.ms'
 end
 
 Redis.raise_deprecations = true

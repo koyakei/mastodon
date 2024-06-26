@@ -2,22 +2,12 @@
 
 class REST::KTagSerializer < ActiveModel::Serializer
 
-  attributes :name, :url, :account, :id
+  attributes :name, :account, :id , :description, :is_owned
 
   attribute :following, if: :current_user?
 
   has_one :account, serializer: REST::AccountSerializer
-  attribute :owned_k_tag_add_relation_request, if: :k_tag_add_relation_request?
-  attribute :owned_k_tag_add_relation_request, if: :k_tag_delete_relation_request?
   
-  def owned_k_tag_add_relation_request
-    object.k_tag_add_relation_requests.owned_requests(current_user.account_id).first
-  end
-
-  def k_tag_add_relation_request?
-    object.k_tag_add_relation_requests.owned_requests(current_user.account_id).exists?
-  end
-
   def owned_k_tag_delete_relation_request
     object.k_tag_delete_relation_requests.owned_requests(current_user.account_id).first
   end
@@ -40,6 +30,10 @@ class REST::KTagSerializer < ActiveModel::Serializer
     else
       KTagFollow.exists?(k_tag_id: object.id, account_id: current_user.account_id)
     end
+  end
+
+  def is_owned
+    current_user? && current_user.account.id == object.account_id
   end
 
   def current_user?
