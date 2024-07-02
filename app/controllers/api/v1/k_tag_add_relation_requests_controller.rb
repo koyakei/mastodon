@@ -1,20 +1,13 @@
-class Api::V1::KTagAddRelationRequestController < Api::BaseController
+class Api::V1::KTagAddRelationRequestsController < Api::BaseController
   include Authorization
 
   before_action :set_api_v1_k_tag_add_relation_request, only: %i[ show approve deny destroy ]
   before_action -> { authorize_if_got_token! :read, :'read:statuses' }, except: [:create, :approve, :deny, :destroy]
   before_action -> { doorkeeper_authorize! :write, :'write:statuses' }, only:   [:create, :approve, :deny, :destroy]
   before_action :require_user!, except:      [:index, :show]
-  after_create :stream_and_notify
-  def stream_and_notify
-    # ここでStatusのアップデートストリームをつくる
-    UpdateStatusService.new.call(
-      @status,
-      current_user.account.id,
-      k_tag_add_relation_requests: @status.k_tag_add_relation_requests
-    )
-  end
-  
+
+
+
   before_action :check_get_limit, only: [:index]
    # This API was originally unlimited, pagination cannot be introduced without
   # breaking backwards-compatibility. Arbitrarily high number to cover most
@@ -22,8 +15,6 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
   # than this anyway
   GET_LIMIT = 4_096
 
-
- 
 
   # GET /api/v1/k_tag_add_relation_reques
   def index
@@ -36,15 +27,34 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
 
   # POST /api/v1/k_tag_add_relation_reques
   def create
-    k_tag_add_relation_requests = KTagAddRelationRequest.new(api_v1_k_tag_add_relation_request_params)
-    # タグのオーナーと現在のユーザーが同じだったら、関係性を作成して終了
-    if current_account_id == KTag.find(id: k_tag_add_relation_requests[:k_tag_id]).account_id
-      @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: params[:k_tag_id], status_id: paarams[:status_id])
-      @k_tag_relation.save(account: account, k_tag: k_tag, status: status)
-      render json: k_tag_add_relation_requests
+    ac = KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
+    k_tag_add_relation_requests = KTagAddRelationRequest.new(api_v1_k_tag_add_relation_request_params.merge(
+      requester_id: current_user.account_id,
+      target_account_id: ac
+    ))
+    logger.debug(k_tag_add_relation_requests)
+    if current_user.account.id == KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
+      k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id], status_id: api_v1_k_tag_add_relation_request_params[:status_id])
+
+      if k_tag_relation.save
+        r = k_tag_relation.status.k_tag_relations
+        logger.debug(r)
+        UpdateStatusService.new.call(
+              k_tag_relation.status,
+          current_user.account_id,
+          k_tag_relations: r
+        )
+        render json:  k_tag_relation.id, status: :created
+      CustomEmojiSerializer
+        render :new, status: :unprocessable_entity
+      end
     elsif k_tag_add_relation_requests.save
-      
-      render json: k_tag_add_relation_requests
+      UpdateStatusService.new.call(
+      @status,
+      current_user.account_id,
+      k_tag_add_relation_requests: k_tag_add_relation_requests
+    )
+      render json: k_tag_add_relation_requests, status: :created
     else
       render :new, status: :unprocessable_entity
     end
@@ -53,12 +63,13 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
   def approve
     authorize @k_tag_add_relation_request, :approve?
     @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: params[:k_tag_id], status_id: paarams[:status_id])
-    if @k_tag_relation.valid? ## bug not unique check only 
+    if @k_tag_relation.valid? ## bug not unique check only
       ActiveRecord::Base.transaction do
-        @k_tag_add_relation_request.update(request_status: :approve, review_comment: params[:review_comment]) 
+        @k_tag_add_relation_request.update(request_status: :approve, review_comment: params[:review_comment])
         @k_tag_relation.save(account: account, k_tag: k_tag, status: status)
         LocalNotificationWorker.perform_async(current_user.account_id,
         @api_v1_k_tag_delete_relation_request.requester_id, 'KTagDeleteRelationRequest', 'k_tag_appprove_add_relation_request')
+
         render json: @k_tag_add_relation_request
       rescue ActiveRecord::RecordInvalid => exception
         render :edit, status: :unprocessable_entity
@@ -76,16 +87,18 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
     if @k_tag_add_relation_request.update(request_status: :deny, review_comment: paarams[:review_comment])
       LocalNotificationWorker.perform_async(current_user.account_id,
       @api_v1_k_tag_delete_relation_request.requester_id, 'KTagDeleteRelationRequest', 'k_tag_deny_add_relation_request')
+      stream_and_notify
       render json: @k_tag_add_relation_request
     else
       render :edit, status: :unprocessable_entity
     end
   end
-  
+
   # DELETE /api/v1/k_tag_add_relation_reques/1
   def destroy
     authorize @k_tag_add_relation_request, :destroy?
     @k_tag_add_relation_request.destroy!
+    stream_and_notify
     redirect_to api_v1_k_tag_add_relation_reques_url, notice: "K tag add relation reque was successfully destroyed.", status: :see_other
   end
 
@@ -106,7 +119,7 @@ class Api::V1::KTagAddRelationRequestController < Api::BaseController
 
     # Only allow a list of trusted parameters through.
     def api_v1_k_tag_add_relation_request_params
-      params.petmit(:account_id, :status_id, :k_tag_id, :request_comment, :review_comment)
+      params.permit(:account_id, :status_id, :k_tag_id, :request_comment, :review_comment)
     end
 
     def require_user!

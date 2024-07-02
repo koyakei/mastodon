@@ -8,7 +8,7 @@
     "ghcr.io/devcontainers/features/sshd:1": {}
   },
 
-  "forwardPorts": [3000, 4000],
+  "forwardPorts": [3000, 4000, 1234],
 
   "portsAttributes": {
     "3000": {
@@ -20,6 +20,10 @@
       "label": "stream",
       "onAutoForward": "silent",
       "requireLocalPort": true
+    },
+    "1234": {
+      "label": "debug",
+      "onAutoForward": "silent"
     }
   },
 

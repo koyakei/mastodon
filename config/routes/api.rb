@@ -8,13 +8,13 @@ namespace :api, format: false do
   namespace :v1 do
     resources :k_tags
     resources :k_tag_relations, only: [:index, :create, :show, :destroy]
-    resources :k_tag_add_relation_requet , only: [:index, :create, :show]do
+    resources :k_tag_add_relation_requests , only: [:index, :create, :show]do
       member do
         post :approve
         post :deny
       end
     end
-    
+
     resources :k_tag_delete_relation_request, only: [:index, :create, :show] do
       member do
         post :approve
