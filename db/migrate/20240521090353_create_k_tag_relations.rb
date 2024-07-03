@@ -7,6 +7,6 @@ class CreateKTagRelations < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
-    add_index :single_relation, [:account_id, :k_tag_id, :status_id], unique: true
+    add_index :k_tag_relations, [:account_id, :k_tag_id, :status_id], unique: true
   end
 end
