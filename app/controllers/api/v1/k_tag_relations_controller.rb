@@ -4,12 +4,13 @@ class Api::V1::KTagRelationsController < Api::BaseController
   before_action -> { authorize_if_got_token! :read, :'read:statuses' }, except: [:create, :destroy]
   before_action -> { doorkeeper_authorize! :write, :'write:statuses' }, only:   [:create, :destroy]
   before_action :require_user!, except:      [:index, :show]
-  before_action :set_api_v1_k_tag_relation, only: %i[ show edit destroy ]
+  before_action :set_api_v1_k_tag_relation, only: %i[ show destroy ]
 
 
   # GET /api/v1/k_tag_relations
   def index
     @api_v1_k_tag_relations = KTagRelation.all
+    render json: @api_v1_k_tag_relations , each_serializer: REST::KTagRelationSerializer
   end
 
   # GET /api/v1/k_tag_relations/1

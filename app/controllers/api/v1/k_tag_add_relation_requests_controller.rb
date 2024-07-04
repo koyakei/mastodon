@@ -32,7 +32,6 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
       requester_id: current_user.account_id,
       target_account_id: ac
     ))
-    logger.debug(k_tag_add_relation_requests)
     if current_user.account.id == KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
       k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id], status_id: api_v1_k_tag_add_relation_request_params[:status_id])
 
