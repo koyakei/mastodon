@@ -7,7 +7,7 @@ class DistributionWorker
 
   def perform(status_id, options = {})
     with_redis_lock("distribute:#{status_id}") do
-      FanOutOnWriteService.new.call(Status.includes(:account, :k_tag_add_relation_requests: :k_tag , k_tag_relations: :k_tag).find(status_id), **options.symbolize_keys)
+      FanOutOnWriteService.new.call(Status.includes(:account, k_tag_add_relation_requests: :k_tag , k_tag_relations: :k_tag).find(status_id), **options.symbolize_keys)
     end
   rescue ActiveRecord::RecordNotFound
     true
