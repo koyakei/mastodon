@@ -36,16 +36,18 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
       k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id], status_id: api_v1_k_tag_add_relation_request_params[:status_id])
 
       if k_tag_relation.save
+
+      # 追加した場合でなおかつ現在のタグが二重に追加され得た場合追加リクエストが自分のものにもかかわらず入ってしまう
+
         r = k_tag_relation.status.k_tag_relations
-        logger.debug(r)
         UpdateStatusService.new.call(
               k_tag_relation.status,
           current_user.account_id,
           k_tag_relations: r
         )
         render json:  k_tag_relation.id, status: :created
-      CustomEmojiSerializer
-        render :new, status: :unprocessable_entity
+      else
+        render :new
       end
     elsif k_tag_add_relation_requests.save
       UpdateStatusService.new.call(
@@ -55,7 +57,7 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
     )
       render json: k_tag_add_relation_requests, status: :created
     else
-      render :new, status: :unprocessable_entity
+      render :new
     end
   end
 

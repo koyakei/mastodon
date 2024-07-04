@@ -36,7 +36,6 @@ class UpdateStatusService < BaseService
     reset_preview_card!
     update_metadata!
     broadcast_updates!
-
     @status
   rescue NoChangesSubmittedError
     # For calls that result in no changes, swallow the error
@@ -165,6 +164,6 @@ class UpdateStatusService < BaseService
   end
 
   def significant_changes?
-    @status.changed? || @poll_changed || @media_attachments_changed
+    @status.changed? || @poll_changed || @media_attachments_changed || @options.key?(:k_tag) || @options.key?(:k_tag_relations)
   end
 end

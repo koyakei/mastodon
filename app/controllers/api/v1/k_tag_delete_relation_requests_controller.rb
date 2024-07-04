@@ -23,8 +23,16 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
   # POST /api/v1/k_tag_add_relation_request
   def create
     k_tag_relation = KTagRelation.find_by(id: api_v1_k_tag_delete_relation_request_params[:k_tag_relation_id])
-    if k_tag_relation.account_id == current_user.account_id
+
+    if k_tag_relation&.account_id == current_user&.account_id
+      # 削除された場合で二重二リクエストが来た場合、自分のものなのに削除リクエストが入る
+      UpdateStatusService.new.call(
+        k_tag_relation.status,
+      current_user.account_id,
+      k_tag: true
+    )
       k_tag_relation.destroy
+
     else
       api_v1_k_tag_delete_relation_request = KTagDeleteRelationRequest.new(api_v1_k_tag_add_relation_request_params.merge(requester_id: current_user.account_id ))
       if api_v1_k_tag_delete_relation_request.save

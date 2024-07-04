@@ -21,8 +21,14 @@ class Api::V1::KTagRelationsController < Api::BaseController
   def create
     authorize  @api_v1_k_tag_relation, create?(KTag.find_by(id: update_create_api_v1_k_tag_relation_params[:k_tag_id]).account_id)
     @api_v1_k_tag_relation = KTagRelation.new(update_create_api_v1_k_tag_relation_params.store(:account_id, current_user&.account_id))
-
     if @api_v1_k_tag_relation.save
+      # 追加した場合でなおかつ現在のタグが二重に追加され得たバア愛
+
+      UpdateStatusService.new.call(
+        @api_v1_k_tag_relation.status,
+      current_user.account_id,
+      k_tag: true
+    )
       redirect_to @api_v1_k_tag_relation, notice: "K tag relation was successfully created."
     else
       render :new, status: :unprocessable_entity

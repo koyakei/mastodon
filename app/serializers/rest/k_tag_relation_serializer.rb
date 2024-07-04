@@ -9,7 +9,7 @@ class REST::KTagRelationSerializer < ActiveModel::Serializer
   has_one :k_tag, serializer: REST::KTagSerializer
   has_many :k_tag_delete_relation_requests
   # attribute :owned_k_tag_delete_relation_request, if: :k_tag_delete_relation_request?
-  attribute :is_owned ##tag and relation is owned by yourslef bool
+  attribute :is_owned
 
   def owned_k_tag_delete_relation_request
     object.k_tag_delete_relation_requests.owned_requests(current_user.account_id).first?
@@ -32,7 +32,7 @@ class REST::KTagRelationSerializer < ActiveModel::Serializer
   end
 
   def is_owned
-    current_user.account_id == object.account_id
+    current_user&.account_id == object&.account_id
   end
 
   def current_user?
