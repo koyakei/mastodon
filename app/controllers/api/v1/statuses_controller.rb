@@ -29,7 +29,7 @@ class Api::V1::StatusesController < Api::BaseController
     if params.permit(:k_tag_ids).nil?
       @statuses = preload_collection(@statuses, Status)
     else
-      @statuses = preload_collection(@statuses, Status.joins(:tag_relations).where(tag_relations: { tag_id: params.permit(:k_tag_ids) }))
+      @statuses = preload_collection(@statuses, Status.where(k_tag_relations: { k_tag_id: params.permit(:k_tag_ids) }))
     end
 
     render json: @statuses, each_serializer: REST::StatusSerializer

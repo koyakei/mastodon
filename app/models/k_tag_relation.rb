@@ -10,13 +10,18 @@
 #  updated_at :datetime         not null
 #
 class KTagRelation < ApplicationRecord
+  include Discard::Model
+
   belongs_to :account
   belongs_to :k_tag
   belongs_to :status
   has_many :k_tag_delete_relation_requests
+  has_many :k_tag_add_relation_requests, ->(k_tag_add_relation_request) { where(status_id: k_tag_add_relation_request.status_id, k_tag_id: k_tag_add_relation_request.k_tag_id)}
+
   scope :k_tag_delete_relation_requests_yourself, -> (account){ where(account_id: account.user_id )}
-  validates_uniqueness_of :k_tag_id, scope: [ :status_id, :account_id]
+
+  validates_uniqueness_of :status_id, scope: [ :account_id]
 
   update_index('statuses'){ status }
-  has_many :k_tag_add_relation_requests, ->(k_tag_add_relation_request) { where(status_id: k_tag_add_relation_request.status_id, k_tag_id: k_tag_add_relation_request.k_tag_id)}
+
 end

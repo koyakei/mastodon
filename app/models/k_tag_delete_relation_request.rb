@@ -15,5 +15,11 @@ class KTagDeleteRelationRequest < ApplicationRecord
   belongs_to :requester, class_name: "Account"
   has_one :notification, as: :activity, dependent: :destroy
   scope :owned_requests, ->(account_id) { where(account_id: account_id) }
-  
+  validates :k_tag_relation_id, uniqueness: { scope: :requester_id }
+  around_create {self.update_column(:k_tag_relation_id_backup, self.k_tag_relation_id)}
+  enum decision_status:{
+    not_decided: 0,
+    approved: 1,
+    denied: 2
+  }
 end

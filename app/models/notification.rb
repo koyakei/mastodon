@@ -42,6 +42,9 @@ class Notification < ApplicationRecord
     follow: {
       filterable: true,
     }.freeze,
+    follow_k_tag: {
+      filterable: true,
+    }.freeze,
     follow_request: {
       filterable: true,
     }.freeze,
@@ -66,18 +69,24 @@ class Notification < ApplicationRecord
     'admin.report': {
       filterable: false,
     }.freeze,
-    k_tag_approve_add_relation_request: {
+    k_tag_add_relation_request: {
       filterable: true,
     }.freeze,
-    k_tag_deny_add_relation_request: {
+    k_tag_delete_relation_request: {
       filterable: true,
     }.freeze,
-    k_tag_approve_delete_relation_request: {
+    k_tag_denied_delete_relation_request: {
       filterable: true,
     }.freeze,
-    k_tag_deny_delete_relation_request: {
+    k_tag_denied_add_relation_request: {
       filterable: true,
-    }.freeze
+    }.freeze,
+    k_tag_approved_delete_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_approved_add_relation_request: {
+      filterable: true,
+    }.freeze,
   }.freeze
 
   TYPES = PROPERTIES.keys.freeze
@@ -119,6 +128,7 @@ class Notification < ApplicationRecord
     @type ||= (super || LEGACY_TYPE_CLASS_MAP[activity_type]).to_sym
   end
 
+  # ktag 系ではここはいじらないでいく
   def target_status
     case type
     when :status, :update
@@ -131,10 +141,6 @@ class Notification < ApplicationRecord
       mention&.status
     when :poll
       poll&.status
-    when :k_tag_approve_add_relation, :k_tag_deny_add_relation
-      k_tag_add_relation_request.status ## || k_tag
-    when :k_tag_approve_delete_relation, :k_tag_deny_delete_relation
-      k_tag_delete_relation.status
     end
   end
 
@@ -211,7 +217,7 @@ class Notification < ApplicationRecord
       self.from_account_id = activity&.id
     when 'KTagRelation'
       self.from_account_id = activity&.k_tag_relation&.account_id
-    when 'KTagAddRelationRequest'
+    when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく　
       self.from_account_id = activity&.k_tag_add_relation_request&.requester&.id
     when 'KTagDeleteRelationRequest'
       self.from_account_id = activity&.k_tag_delete_relation_request&.requester&.id

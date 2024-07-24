@@ -32,7 +32,7 @@ class REST::KTagRelationSerializer < ActiveModel::Serializer
   end
 
   def is_owned
-    current_user&.account_id == object&.account_id
+    current_user&.account&.id == object.account_id
   end
 
   def current_user?

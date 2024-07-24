@@ -5,7 +5,7 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
   before_action -> { authorize_if_got_token! :read, :'read:statuses' }, except: [:create, :approve, :deny, :destroy]
   before_action -> { doorkeeper_authorize! :write, :'write:statuses' }, only:   [:create, :approve, :deny, :destroy]
   before_action :require_user!, except:      [:index, :show]
-   # This API was originally unlimited, pagination cannot be introduced without
+  #  This API was originally unlimited, pagination cannot be introduced without
   # breaking backwards-compatibility. Arbitrarily high number to cover most
   # conversations as quasi-unlimited, it would be too much work to render more
   # than this anyway
@@ -20,25 +20,38 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
   def show
   end
 
-  # POST /api/v1/k_tag_add_relation_request
+  # POST /api/v1/k_tag_delete_relation_request
   def create
+    logger.debug api_v1_k_tag_delete_relation_request_params[:k_tag_relation_id]
+    logger.debug KTagRelation.find_by(id: api_v1_k_tag_delete_relation_request_params[:k_tag_relation_id])
     k_tag_relation = KTagRelation.find_by(id: api_v1_k_tag_delete_relation_request_params[:k_tag_relation_id])
-
-    if k_tag_relation&.account_id == current_user&.account_id
+    if k_tag_relation.nil?
+      render json: { error: 'KTagRelation not found' }, status: :not_found
+    elsif k_tag_relation&.account_id == current_user&.account_id
       # 削除された場合で二重二リクエストが来た場合、自分のものなのに削除リクエストが入る
-      UpdateStatusService.new.call(
-        k_tag_relation.status,
-      current_user.account_id,
-      k_tag: true
-    )
-      k_tag_relation.destroy
-
+      if k_tag_relation.discard
+        UpdateStatusService.new.call(
+          k_tag_relation.status,
+        current_user.account_id,
+        k_tag: true
+      )
+      logger.debug k_tag_relation
+        # 自分のものを削除できました　レスポンス　http 200 で返すべき　KTagRelation削除メソッドにクライアント側からアクセスするべきなのかも
+        render json: k_tag_relation.status, status: :ok, serializer: REST::StatusSerializer
+      end
     else
-      api_v1_k_tag_delete_relation_request = KTagDeleteRelationRequest.new(api_v1_k_tag_add_relation_request_params.merge(requester_id: current_user.account_id ))
+      # 他人の所有しているタグだった場合リクエストを送る　通知
+      api_v1_k_tag_delete_relation_request = KTagDeleteRelationRequest.new(api_v1_k_tag_delete_relation_request_params.merge(requester_id: current_user.account_id ))
       if api_v1_k_tag_delete_relation_request.save
-        render json: api_v1_k_tag_delete_relation_request
+        UpdateStatusService.new.call(
+          k_tag_relation.status,
+          current_user.account_id,
+          k_tag: true
+        )
+        LocalNotificationWorker.perform_async(k_tag_relation&.account_id, api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest','k_tag_delete_relation_request')
+        render json: k_tag_relation.status, status: :ok, serializer: REST::StatusSerializer
       else
-        render :new, status: :unprocessable_entity
+        render json: { errors: api_v1_k_tag_delete_relation_request.errors.full_messages }, status: :conflict
       end
     end
   end
@@ -46,41 +59,58 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
   def approve
     authorize @api_v1_k_tag_delete_relation_request, :approve?
     # already_created?
-    if @k_tag_relation.valid? ## bug not unique check only
-      ActiveRecord::Base.transaction do
-        @api_v1_k_tag_delete_relation_request.update(request_status: :approve, review_comment: params[:review_comment])
-        @k_tag_relation.save(account: account, k_tag: k_tag, status: status)
-        LocalNotificationWorker.perform_async(current_user.account_id,
-        @api_v1_k_tag_delete_relation_request.requester_id, 'KTagDeleteRelationRequest', 'k_tag_appprove_delete_relation_request')
-
-        render json: api_v1_k_tag_delete_relation_request
-      rescue ActiveRecord::RecordInvalid => exception
-        render :edit, status: :unprocessable_entity
-      end
+    if @api_v1_k_tag_delete_relation_request.approved?
+      render json: { error: "already approved" }, status: :unprocessable_entity
     else
-      alredy_requested = KTagAddRelationRequest.where(
-        account_id: params[:account_id], k_tag: params[:k_tag_id], status_id: paarams[:status_id])
-      alredy_requested.update_all(request_status: :approve)
-      render json: @k_tag_relation
+      k_tag_relation = @api_v1_k_tag_delete_relation_request.k_tag_relation
+      if k_tag_relation.discarded?
+        render json: {error: "k tag relation alredy discarded"}, status: :unprocessable_entity
+      end
+      ActiveRecord::Base.transaction do
+        # 承認して関係性を削除
+        @api_v1_k_tag_delete_relation_request.update(decision_status: :approved, review_comment: params[:review_comment])
+        k_tag_relation.discard!
+        UpdateStatusService.new.call(
+          k_tag_relation.status,
+          current_user.account_id,
+          k_tag: true
+        )
+        LocalNotificationWorker.perform_async(k_tag_relation.account_id,
+        @api_v1_k_tag_delete_relation_request.id , 'KTagDeleteRelationRequest', 'k_tag_appproved_delete_relation_request')
+      rescue ActiveRecord::RecordInvalid => exception
+        render json: {error: exception},, status: :unprocessable_entity
+      end
+      render json: @api_v1_k_tag_delete_relation_request, status: :ok
     end
   end
 
   def deny
     authorize @api_v1_k_tag_delete_relation_request, :deny?
-    if api_v1_k_tag_delete_relation_request.update(request_status: :deny, review_comment: paarams[:review_comment])
-      LocalNotificationWorker.perform_async(current_user.account_id,
-      @api_v1_k_tag_delete_relation_request.requester_id, 'KTagDeleteRelationRequest', 'k_tag_deny_delete_relation_request')
-      render json: api_v1_k_tag_delete_relation_request
+    if @api_v1_k_tag_delete_relation_request.denied?
+      render json: { error: "already denied" }, status: :unprocessable_entity
     else
-      render :edit, status: :unprocessable_entity
+      if @api_v1_k_tag_delete_relation_request.update(decision_status: :denied, review_comment: paarams[:review_comment])
+        #TODO: 残りのリクエストを全部同じ決定にして処理するの？
+        @api_v1_k_tag_delete_relation_request.k_tag_relation.undiscard ## error catch しなくていいの？　過去に一回削除承認しても拒否で戻せるように　押し間違い対応
+        LocalNotificationWorker.perform_async(k_tag_relation.account_id,
+        @api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest', 'k_tag_denied_delete_relation_request')
+        UpdateStatusService.new.call(
+          @api_v1_k_tag_delete_relation_request.k_tag_relation.status,
+          current_user.account_id,
+          k_tag: true
+        )
+        render json: @api_v1_k_tag_delete_relation_request
+      else
+        render :edit, status: :unprocessable_entity
+      end
     end
   end
 
-  # DELETE /api/v1/k_tag_add_relation_reques/1
+  # DELETE /api/v1/k_tag_add_relation_request/1
   def destroy
     authorize @api_v1_k_tag_delete_relation_request, :destroy?
     api_v1_k_tag_delete_relation_request.destroy!
-    redirect_to api_v1_k_tag_add_relation_reques_url, notice: "K tag add relation reque was successfully destroyed.", status: :see_other
+    redirect_to api_v1_k_tag_add_relation_request_url, notice: "K tag add relation reque was successfully destroyed.", status: :see_other
   end
 
   private
