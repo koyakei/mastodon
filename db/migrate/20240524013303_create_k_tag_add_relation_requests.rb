@@ -9,9 +9,8 @@ class CreateKTagAddRelationRequests < ActiveRecord::Migration[7.1]
       t.text :request_comment, null: false, default: ''
       t.text :review_comment, null: false, default: ''
       t.timestamps
-      # t.index [:target_account_id, :requester_id, :k_tag_id, :status_id], unique: true
     end
-    add_index :k_tag_add_relation_requests, [:target_account_id, :requester_id, :k_tag_id, :status_id], unique: true
+    add_index :k_tag_add_relation_requests, [:requester_id, :k_tag_id, :status_id], unique: true
   end
-  
+
 end

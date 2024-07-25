@@ -43,19 +43,26 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
         )
         # 追加した場合でなおかつ現在のタグが二重に追加され得た場合追加リクエストが自分のものにもかかわらず入ってしまう
         render json: k_tag_relation.status, status: :created, serializer: REST::StatusSerializer
-      rescue rescue ActiveRecord::RecordInvalid => e
+      rescue ActiveRecord::RecordInvalid => e
         render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
       end
     else
-      begin
-        k_tag_add_relation_request.save!
-        UpdateStatusService.new.call(
-          @status,
-          current_user.account_id,
-          k_tag_add_relation_request: k_tag_add_relation_request
-        )
-        render json: k_tag_add_relation_request.status, status: :created, serializer: REST::StatusSerializer
-      rescue rescue ActiveRecord::RecordInvalid => e
+      if  k_tag_add_relation_request.valid?
+        begin
+          # k_tag_add_relation_request.save!
+          UpdateStatusService.new.call(
+            k_tag_add_relation_request.status,
+            current_user.account_id,
+            k_tag_add_relation_request: k_tag_add_relation_request
+          )
+          logger.debug k_tag_add_relation_request.status
+          render json: k_tag_add_relation_request.status, serializer: REST::StatusSerializer
+      rescue ActiveRecord::RecordInvalid => e
+        rescue ActiveRecord::RecordInvalid => e
+          render json: { errors: k_tag_add_relation_request.errors.full_messages }, status: :internal_server_error
+        end
+      else
+        logger.debug k_tag_add_relation_request.errors.full_messages
         render json: { errors: k_tag_add_relation_request.errors.full_messages }, status: :unprocessable_entity
       end
     end
@@ -101,7 +108,7 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
 
   # DELETE /api/v1/k_tag_add_relation_reques/1
   def destroy
-    authorize @k_tag_add_relation_request, :destroy?
+    # authorize @k_tag_add_relation_request, :destroy?
     @k_tag_add_relation_request.destroy!
     stream_and_notify
     redirect_to api_v1_k_tag_add_relation_reques_url, notice: "K tag add relation reque was successfully destroyed.", status: :see_other

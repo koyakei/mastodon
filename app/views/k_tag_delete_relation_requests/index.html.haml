@@ -1,0 +1,19 @@
+%h1 Listing k_tag_delete_relation_requests
+
+%table
+  %thead
+    %tr
+      %th
+      %th
+      %th
+
+  %tbody
+    - @k_tag_delete_relation_requests.each do |k_tag_delete_relation_request|
+      %tr
+        %td= link_to 'Show', k_tag_delete_relation_request
+        %td= link_to 'Edit', edit_k_tag_delete_relation_request_path(k_tag_delete_relation_request)
+        %td= link_to 'Destroy', k_tag_delete_relation_request, method: :delete, data: { confirm: 'Are you sure?' }
+
+%br
+
+= link_to 'New K tag delete relation request', new_k_tag_delete_relation_request_path

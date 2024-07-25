@@ -17,6 +17,8 @@ end
 
 Rails.application.routes.draw do
   resources :k_tags
+  resources :k_tag_add_relation_requests
+  resources :k_tag_delete_relation_requests
   namespace :api do
     namespace :v1 do
       resources :k_tag_follows
