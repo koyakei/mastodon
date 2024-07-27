@@ -3,11 +3,11 @@
 class REST::KTagAddRelationRequestForUserSerializer < ActiveModel::Serializer
   # Please update `app/javascript/mastodon/api_types/polls.ts` when making changes to the attributes
 
-  attributes :id, :is_owned, :decision_status, :k_tag_id, :status_id, :description
+  attributes :id, :is_owned, :decision_status, :k_tag_id, :status_id, :request_comment
 
-  belongs_to :account, serializer: REST::AccountSerializer
+  belongs_to :requester, class_name: 'Account', foreign_key: :requester_id ,serializer: REST::AccountSerializer
   belongs_to :k_tag, serializer: REST::KTagSerializer
-  belongs_to :status, serializer: REST::StatusSerializer
+  # belongs_to :status, serializer: REST::StatusSerializer
 
   def id
     object.id.to_s
@@ -22,10 +22,11 @@ class REST::KTagAddRelationRequestForUserSerializer < ActiveModel::Serializer
   end
 
   def is_owned
-    current_user.account_id == account_id
+    false
+    # current_user&.account_id == object.requester_id
   end
 
   def decision_status
-    object.decision_status_before_type_cast
+    KTagAddRelationRequest.decision_status[object.decision_status]
   end
 end

@@ -13,7 +13,9 @@ class Api::V1::NotificationsController < Api::BaseController
       @notifications = load_notifications
       @relationships = StatusRelationshipsPresenter.new(target_statuses_from_notifications, current_user&.account_id)
     end
-
+    logger.debug "fdsajafdsoofds"
+    logger.debug REST::NotificationSerializer.new(@notifications.first)
+    logger.debug REST::NotificationSerializer.new(@notifications.first).as_json
     render json: @notifications, each_serializer: REST::NotificationSerializer, relationships: @relationships
   end
 

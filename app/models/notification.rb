@@ -99,6 +99,7 @@ class Notification < ApplicationRecord
     poll: [poll: :status],
     update: :status,
     'admin.report': [report: :target_account],
+    k_tag_add_relation_request: :k_tag_add_relation_request
   }.freeze
 
   belongs_to :account, optional: true
@@ -218,9 +219,9 @@ class Notification < ApplicationRecord
     when 'KTagRelation'
       self.from_account_id = activity&.k_tag_relation&.account_id
     when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく　
-      self.from_account_id = activity&.k_tag_add_relation_request&.requester&.id
+      self.from_account_id = activity&.requester_id
     when 'KTagDeleteRelationRequest'
-      self.from_account_id = activity&.k_tag_delete_relation_request&.requester&.id
+      self.from_account_id = activity&.requester_id
     when 'AccountRelationshipSeveranceEvent', 'AccountWarning'
       # These do not really have an originating account, but this is mandatory
       # in the data model, and the recipient's account will by definition
