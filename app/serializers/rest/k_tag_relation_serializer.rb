@@ -3,7 +3,7 @@
 class REST::KTagRelationSerializer < ActiveModel::Serializer
 
   # attribute :following, if: :current_user?
-  attributes :id,:k_tag_id, :status_id, :k_tag_delete_relation_requests, :account_id
+  attributes :id,:k_tag_id, :status_id, :account_id
 
   has_one :account, serializer: REST::AccountSerializer
   has_one :k_tag, serializer: REST::KTagSerializer

@@ -11,6 +11,16 @@ class REST::NotificationSerializer < ActiveModel::Serializer
   belongs_to :k_tag_add_relation_request, if: :k_tag_add_relation_request_type?, serializer: REST::KTagAddRelationRequestForUserSerializer
   belongs_to :k_tag_delete_relation_request, if: :k_tag_delete_relation_request_type?, serializer: REST::KTagDeleteRelationRequestSerializer
 
+  attribute :status, if: :k_tag_add_relation_request_type?, serializer: REST::StatusSerializer
+
+  # def k_tag_type?
+  #   k_tag_add_relation_request_type?
+  # end
+
+  def status
+    object.k_tag_add_relation_request.status
+  end
+
   def id
     object.id.to_s
   end
@@ -20,13 +30,12 @@ class REST::NotificationSerializer < ActiveModel::Serializer
   end
 
   def k_tag_add_relation_request_type?
-    [:k_tag_add_relation_request].include?(object.type)
+    (object.type.to_s).start_with?("k_tag_add_relation_request")
   end
 
   def k_tag_delete_relation_request_type?
     [:k_tag_delete].include?(object.type)
   end
-
 
   def report_type?
     object.type == :'admin.report'

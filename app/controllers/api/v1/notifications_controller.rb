@@ -13,9 +13,12 @@ class Api::V1::NotificationsController < Api::BaseController
       @notifications = load_notifications
       @relationships = StatusRelationshipsPresenter.new(target_statuses_from_notifications, current_user&.account_id)
     end
-    logger.debug "fdsajafdsoofds"
-    logger.debug REST::NotificationSerializer.new(@notifications.first)
-    logger.debug REST::NotificationSerializer.new(@notifications.first).as_json
+    # Rails.logger.debug @notifications.count
+    # Rails.logger.debug "dafdadsfdsafd"
+    # @notifications.each do |notification|
+    #   Rails.logger.debug REST::NotificationSerializer.new(notification).serializable_hash
+    # end
+
     render json: @notifications, each_serializer: REST::NotificationSerializer, relationships: @relationships
   end
 

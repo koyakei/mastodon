@@ -19,7 +19,7 @@ class KTagAddRelationRequest < ApplicationRecord
   belongs_to :requester, class_name: "Account"
   belongs_to :status
   has_one :notification, as: :activity, dependent: :destroy
-  enum :decision_status, {
+  enum :request_status, {
     not_reviewed: 0,
     approved: 1,
     denied: 2

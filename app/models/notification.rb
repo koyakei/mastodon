@@ -78,13 +78,13 @@ class Notification < ApplicationRecord
     k_tag_denied_delete_relation_request: {
       filterable: true,
     }.freeze,
-    k_tag_denied_add_relation_request: {
+    k_tag_add_relation_request_denied: {
       filterable: true,
     }.freeze,
     k_tag_approved_delete_relation_request: {
       filterable: true,
     }.freeze,
-    k_tag_approved_add_relation_request: {
+    k_tag_add_relation_request_approved: {
       filterable: true,
     }.freeze,
   }.freeze
@@ -99,7 +99,7 @@ class Notification < ApplicationRecord
     poll: [poll: :status],
     update: :status,
     'admin.report': [report: :target_account],
-    k_tag_add_relation_request: :k_tag_add_relation_request
+    k_tag_add_relation_request: [:k_tag_add_relation_request, :k_tag_add_relation_request_approved]
   }.freeze
 
   belongs_to :account, optional: true
@@ -218,8 +218,13 @@ class Notification < ApplicationRecord
       self.from_account_id = activity&.id
     when 'KTagRelation'
       self.from_account_id = activity&.k_tag_relation&.account_id
-    when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく　
-      self.from_account_id = activity&.requester_id
+    when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく
+      case self.type
+      when :k_tag_add_relation_request
+        self.from_account_id = activity&.requester_id
+      when :k_tag_add_relation_request_approved
+        self.from_account_id = activity&.target_account_id
+      end
     when 'KTagDeleteRelationRequest'
       self.from_account_id = activity&.requester_id
     when 'AccountRelationshipSeveranceEvent', 'AccountWarning'

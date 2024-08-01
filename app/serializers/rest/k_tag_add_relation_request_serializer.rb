@@ -2,7 +2,7 @@
 
 class REST::KTagAddRelationRequestSerializer < ActiveModel::Serializer
 
-  attributes :id, :is_owned, :decision_status, :k_tag_id, :status_id, :request_comment
+  attributes :id, :is_owned, :request_status, :k_tag_id, :status_id, :request_comment
 
   belongs_to :requester, class_name: 'Account', foreign_key: :requester_id ,serializer: REST::AccountSerializer
   belongs_to :k_tag, serializer: REST::KTagSerializer
@@ -24,7 +24,7 @@ class REST::KTagAddRelationRequestSerializer < ActiveModel::Serializer
     current_user&.account_id == object.requester_id
   end
 
-  def decision_status
-    object.read_attribute_for_database(:decision_status)
+  def request_status
+    object.request_status_before_type_cast
   end
 end

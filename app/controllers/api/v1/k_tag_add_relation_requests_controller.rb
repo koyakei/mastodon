@@ -18,7 +18,8 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
     ac = KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
     k_tag_add_relation_request = KTagAddRelationRequest.new(api_v1_k_tag_add_relation_request_params.merge(
       requester_id: current_user.account_id,
-      target_account_id: ac
+      target_account_id: ac,
+      request_status: :not_reviewed
     ))
 
     if current_user.account.id == KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
@@ -58,33 +59,33 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
 
   def approve
     authorize @k_tag_add_relation_request, :approve?
-    @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: params[:k_tag_id], status_id: params[:status_id])
+    @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: @k_tag_add_relation_request.k_tag, status_id: @k_tag_add_relation_request.status_id)
     if @k_tag_relation.valid?
       ActiveRecord::Base.transaction do
         @k_tag_relation.save!
-        @k_tag_add_relation_request.update(decision_status: :approved, review_comment: params[:review_comment])
-        LocalNotificationWorker.perform_async(@api_v1_k_tag_delete_relation_request.requester_id,
-                                              @api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest', 'k_tag_approve_add_relation_request')
+        @k_tag_add_relation_request.update(request_status: :approved, review_comment:  params[:review_comment] || "")
+        LocalNotificationWorker.new.perform(@k_tag_add_relation_request.requester_id,
+        @k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
         UpdateStatusService.new.call(
           @k_tag_relation.status,
           current_user.account_id,
           k_tag_add_relation_request: @k_tag_add_relation_request
         )
-        render json: @k_tag_add_relation_request
+        render json: @k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
       rescue ActiveRecord::RecordInvalid => exception
         render :edit, status: :unprocessable_entity
       end
     else
       already_requested = KTagAddRelationRequest.where(
-        account_id: current_user.account_id, k_tag: params[:k_tag_id], status_id: params[:status_id])
-      already_requested.update_all(decision_status: :approved)
+        target_account_id: current_user.id, k_tag: params[:k_tag_id], status_id: params[:status_id])
+      already_requested.update_all(request_status: :approved)
       render json: { errors: "already related #{@k_tag_relation.valid?}" }, status: :conflict
     end
   end
 
   def deny
     authorize @k_tag_add_relation_request, :deny?
-    if @k_tag_add_relation_request.update(decision_status: :denied, review_comment: params[:review_comment])
+    if @k_tag_add_relation_request.update(request_status: :denied, review_comment: params[:review_comment])
       LocalNotificationWorker.perform_async(@api_v1_k_tag_delete_relation_request.requester_id,
                                             @api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest', 'k_tag_deny_add_relation_request')
 

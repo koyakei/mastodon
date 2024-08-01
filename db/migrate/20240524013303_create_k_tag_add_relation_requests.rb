@@ -5,7 +5,7 @@ class CreateKTagAddRelationRequests < ActiveRecord::Migration[7.1]
       t.references :requester, null: false, foreign_key: {to_table: :accounts}
       t.references :target_account, null: false, foreign_key: {to_table: :accounts}
       t.references :status, null: false, foreign_key: true
-      t.integer :decision_status, null: false, default: 0
+      t.integer :request_status, null: false, default: 0
       t.text :request_comment, null: false, default: ''
       t.text :review_comment, null: false, default: ''
       t.timestamps

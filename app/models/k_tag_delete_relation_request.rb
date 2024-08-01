@@ -17,7 +17,7 @@ class KTagDeleteRelationRequest < ApplicationRecord
   scope :owned_requests, ->(account_id) { where(account_id: account_id) }
   validates :k_tag_relation_id, uniqueness: { scope: :requester_id }
   around_create {self.update_column(:k_tag_relation_id_backup, self.k_tag_relation_id)}
-  enum decision_status:{
+  enum request_status:{
     not_decided: 0,
     approved: 1,
     denied: 2
