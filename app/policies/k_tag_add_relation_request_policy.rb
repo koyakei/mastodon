@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 class KTagAddRelationRequestPolicy < KTagPolicy
-  def approve?(target_account_id)
-    current_account&.user.id == record.target_account_id
+  def approve?
+    current_account.id == record.target_account_id
   end
 
-  def deny?(target_account_id)
-    current_account&.user.id == record.target_account_id
+  def deny?
+    current_account.id == record.target_account_id
   end
 
   def destroy?

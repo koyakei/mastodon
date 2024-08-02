@@ -7,7 +7,7 @@ class REST::KTagRelationSerializer < ActiveModel::Serializer
 
   has_one :account, serializer: REST::AccountSerializer
   has_one :k_tag, serializer: REST::KTagSerializer
-  has_many :k_tag_delete_relation_requests
+  # has_many :k_tag_delete_relation_requests
   # attribute :owned_k_tag_delete_relation_request, if: :k_tag_delete_relation_request?
   attribute :is_owned
 

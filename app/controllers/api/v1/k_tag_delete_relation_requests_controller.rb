@@ -68,7 +68,8 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
       end
       ActiveRecord::Base.transaction do
         # 承認して関係性を削除
-        @api_v1_k_tag_delete_relation_request.update(decision_status: :approved, review_comment: params[:review_comment])
+        @api_v1_k_tag_delete_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || "")
+
         k_tag_relation.discard!
         UpdateStatusService.new.call(
           k_tag_relation.status,
@@ -89,7 +90,7 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
     if @api_v1_k_tag_delete_relation_request.denied?
       render json: { error: "already denied" }, status: :unprocessable_entity
     else
-      if @api_v1_k_tag_delete_relation_request.update(decision_status: :denied, review_comment: paarams[:review_comment])
+      if @api_v1_k_tag_delete_relation_request.update(request_status: :denied, review_comment: paarams[:review_comment])
         #TODO: 残りのリクエストを全部同じ決定にして処理するの？
         @api_v1_k_tag_delete_relation_request.k_tag_relation.undiscard ## error catch しなくていいの？　過去に一回削除承認しても拒否で戻せるように　押し間違い対応
         LocalNotificationWorker.perform_async(k_tag_relation.account_id,

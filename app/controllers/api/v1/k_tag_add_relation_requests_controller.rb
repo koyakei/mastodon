@@ -63,8 +63,8 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
     if @k_tag_relation.valid?
       ActiveRecord::Base.transaction do
         @k_tag_relation.save!
-        @k_tag_add_relation_request.update(request_status: :approved, review_comment:  params[:review_comment] || "")
-        LocalNotificationWorker.new.perform(@k_tag_add_relation_request.requester_id,
+        @k_tag_add_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || "")
+        LocalNotificationWorker.perform_async(@k_tag_add_relation_request.requester_id,
         @k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
         UpdateStatusService.new.call(
           @k_tag_relation.status,
@@ -78,7 +78,7 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
     else
       already_requested = KTagAddRelationRequest.where(
         target_account_id: current_user.id, k_tag: params[:k_tag_id], status_id: params[:status_id])
-      already_requested.update_all(request_status: :approved)
+      already_requested.approved!
       render json: { errors: "already related #{@k_tag_relation.valid?}" }, status: :conflict
     end
   end

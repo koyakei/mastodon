@@ -99,7 +99,7 @@ class Notification < ApplicationRecord
     poll: [poll: :status],
     update: :status,
     'admin.report': [report: :target_account],
-    k_tag_add_relation_request: [:k_tag_add_relation_request, :k_tag_add_relation_request_approved]
+    k_tag_add_relation_request: [:k_tag_add_relation_request]
   }.freeze
 
   belongs_to :account, optional: true

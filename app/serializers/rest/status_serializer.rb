@@ -1,22 +1,17 @@
 # frozen_string_literal: true
 
-class KTagRelationshipsPresenter
-  attr_reader :k_tag_add_relation_requests
-  @k_tag_add_relation_requests
-
-  def initialize(k_tag_add_relation_requests )
-    @k_tag_add_relation_requests = k_tag_add_relation_requests
-  end
-end
 class REST::StatusSerializer < ActiveModel::Serializer
   include FormattingHelper
 
   # Please update `app/javascript/mastodon/api_types/statuses.ts` when making changes to the attributes
+  # has_many :k_tag_add_relation_requests, serializer: REST::KTagAddRelationRequestForUserSerializer
 
+  has_many :k_tag_relations, serializer: REST::KTagRelationSerializer
+  ## 削除リクエスト　追加リクエスト　何にもされてない関係性
   attributes :id, :created_at, :in_reply_to_id, :in_reply_to_account_id,
              :sensitive, :spoiler_text, :visibility, :language,
              :uri, :url, :replies_count, :reblogs_count,
-             :favourites_count, :edited_at,:k_tag_relations
+             :favourites_count, :edited_at
 
   attribute :favourited, if: :current_user?
   attribute :reblogged, if: :current_user?
@@ -24,8 +19,6 @@ class REST::StatusSerializer < ActiveModel::Serializer
   attribute :bookmarked, if: :current_user?
   attribute :pinned, if: :pinnable?
   has_many :filtered, serializer: REST::FilterResultSerializer, if: :current_user?
-
-  has_many :k_tag_add_relation_requests, serializer: REST::KTagAddRelationRequestForUserSerializer
 
   attribute :content, unless: :source_requested?
   attribute :text, if: :source_requested?
@@ -38,8 +31,6 @@ class REST::StatusSerializer < ActiveModel::Serializer
   has_many :ordered_mentions, key: :mentions
   has_many :tags
   has_many :emojis, serializer: REST::CustomEmojiSerializer
-  has_many :k_tag_relations, serializer: REST::KTagRelationSerializer
-  ## 削除リクエスト　追加リクエスト　何にもされてない関係性
 
   has_one :preview_card, key: :card, serializer: REST::PreviewCardSerializer
   has_one :preloadable_poll, key: :poll, serializer: REST::PollSerializer
@@ -57,7 +48,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
   end
 
   def current_user?
-    !current_user&.nil?
+    !current_user.nil?
   end
 
   def show_application?
@@ -76,7 +67,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
   end
 
   def sensitive
-    if current_user? && current_user&.account_id == object&.account_id
+    if current_user? && current_user.account_id == object.account_id
       object.sensitive
     else
       object.account.sensitized? || object.sensitive
@@ -123,7 +114,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
     if relationships
       relationships.mutes_map[object.conversation_id] || false
     else
-      current_user&.account.muting_conversation?(object.conversation)
+      current_user.account.muting_conversation?(object.conversation)
     end
   end
 
@@ -131,7 +122,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
     if relationships
       relationships.bookmarks_map[object.id] || false
     else
-      current_user&.account.bookmarked?(object)
+      current_user.account.bookmarked?(object)
     end
   end
 
@@ -139,7 +130,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
     if relationships
       relationships.pins_map[object.id] || false
     else
-      current_user&.account.pinned?(object)
+      current_user.account.pinned?(object)
     end
   end
 
@@ -147,13 +138,13 @@ class REST::StatusSerializer < ActiveModel::Serializer
     if relationships
       relationships.filters_map[object.id] || []
     else
-      current_user&.account.status_matches_filters(object)
+      current_user.account.status_matches_filters(object)
     end
   end
 
   def pinnable?
     current_user? &&
-      current_user&.account_id == object.account_id &&
+      current_user.account_id == object.account_id &&
       !object.reblog? &&
       %w(public unlisted private).include?(object.visibility)
   end
@@ -196,7 +187,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
     end
 
     def acct
-      object&.account.pretty_acct
+      object.account.pretty_acct
     end
   end
 
