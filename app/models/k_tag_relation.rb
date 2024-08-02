@@ -20,7 +20,7 @@ class KTagRelation < ApplicationRecord
 
   scope :k_tag_delete_relation_requests_yourself, -> (account){ where(account_id: account.user_id )}
 
-  validates_uniqueness_of :status_id, scope: [ :account_id]
+  validates_uniqueness_of :status_id, scope: [ :k_tag_id]
 
   update_index('statuses'){ status }
 
