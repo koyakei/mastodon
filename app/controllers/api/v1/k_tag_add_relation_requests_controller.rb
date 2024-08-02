@@ -78,7 +78,7 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
     else
       already_requested = KTagAddRelationRequest.where(
         target_account_id: current_user.id, k_tag: params[:k_tag_id], status_id: params[:status_id])
-      already_requested.approved!
+        KTagAddRelationRequest.update(request_status: :approved)
       render json: { errors: "already related #{@k_tag_relation.valid?}" }, status: :conflict
     end
   end
