@@ -25,5 +25,11 @@ class KTagAddRelationRequest < ApplicationRecord
     denied: 2
   }
   scope :owned_requests, ->(account_id) { where(account_id: account_id) }
-  # validates :k_tag_id, uniqueness: { scope: [ :requester_id,:status_id] }
+  validate :unique_not_reviewed_request
+
+  def unique_not_reviewed_request
+    if request_status == "not_reviewed" && self.class.where(k_tag_id: k_tag_id, requester_id: requester_id, status_id: status_id, request_status: "not_reviewed").exists?
+      errors.add(:base, "A not_reviewed request with the same k_tag_id, requester_id, and status_id already exists.")
+    end
+  end
 end
