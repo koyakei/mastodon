@@ -11,8 +11,11 @@ class REST::NotificationSerializer < ActiveModel::Serializer
   belongs_to :k_tag_add_relation_request, if: :k_tag_add_relation_request_type?, serializer: REST::KTagAddRelationRequestForUserSerializer
   belongs_to :k_tag_delete_relation_request, if: :k_tag_delete_relation_request_type?, serializer: REST::KTagDeleteRelationRequestSerializer
 
-  has_one :status, if: :k_tag_add_relation_request_type?, serializer: REST::StatusSerializer
-  # has_one :delete_status, key: :status, if: :k_tag_delete_type?, serializer: REST::StatusSerializer
+  has_one :status, if: :k_tag_request?, serializer: REST::StatusSerializer
+
+  def k_tag_request?
+    k_tag_add_type? || k_tag_delete_type?
+  end
 
   def k_tag_add_type?
     !status_type? && k_tag_add_relation_request_type?
@@ -23,7 +26,11 @@ class REST::NotificationSerializer < ActiveModel::Serializer
   end
 
   def status
-    object.k_tag_add_relation_request.status
+    if k_tag_add_relation_request_type?
+      return object&.k_tag_add_relation_request.status
+    elsif k_tag_delete_relation_request_type?
+      return del = object&.k_tag_delete_relation_request.status
+    end
   end
 
   def delete_status
