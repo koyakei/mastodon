@@ -19,7 +19,8 @@ class Api::V1::Timelines::KTagController < Api::V1::Timelines::BaseController
   end
 
   def load_tag
-    @tag = KTag.find_normalized(params[:id])
+    ## id で縛る必要がありそう
+    @tags = KTag.find_normalized(params[:id])
   end
 
   def load_statuses
@@ -27,7 +28,7 @@ class Api::V1::Timelines::KTagController < Api::V1::Timelines::BaseController
   end
 
   def preloaded_tagged_statuses
-    @tag.nil? ? [] : preload_collection(tag_timeline_statuses, Status)
+    @tags.nil? ? [] : preload_collection(tag_timeline_statuses, Status)
   end
 
   def tag_timeline_statuses
@@ -41,7 +42,7 @@ class Api::V1::Timelines::KTagController < Api::V1::Timelines::BaseController
 
   def tag_feed
     KTagFeed.new(
-      @tag,
+      @tags,
       current_account,
       any: params[:any],
       all: params[:all],

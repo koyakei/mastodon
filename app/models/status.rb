@@ -112,7 +112,7 @@ class Status < ApplicationRecord
   scope :reply_to_account, -> { where(arel_table[:in_reply_to_account_id].eq arel_table[:account_id]) }
   scope :without_reblogs, -> { where(statuses: { reblog_of_id: nil }) }
   scope :tagged_with, ->(tag_ids) { joins(:statuses_tags).where(statuses_tags: { tag_id: tag_ids }) }
-  scope :k_tagged_with, ->(k_tag_ids) { joins(:k_tag_relations).where(k_tag_relations: { k_tag_id: tag_ids }) }
+  scope :k_tagged_with, ->(k_tag_ids) { joins(:k_tag_relations).where(k_tag_relations: { k_tag_id: k_tag_ids }) }
   scope :not_excluded_by_account, ->(account) { where.not(account_id: account.excluded_from_timeline_account_ids) }
   scope :not_domain_blocked_by_account, ->(account) { account.excluded_from_timeline_domains.blank? ? left_outer_joins(:account) : left_outer_joins(:account).merge(Account.not_domain_blocked_by_account(account)) }
   scope :tagged_with_all, lambda { |tag_ids|
@@ -130,7 +130,7 @@ class Status < ApplicationRecord
     end
   }
   has_many :k_tag_add_relation_requests
-  
+
   # k tag relation についている　追加されているタグを読み込む　それぞれについているadding relation を呼び出す
   scope :adding_k_tag_relations_yourself, -> (account){ joins(:k_tag_add_relation_requests).where(k_tag_add_relation_requests: { account_id: account.account_id }) }
   scope :tagged_with_none, lambda { |tag_ids|

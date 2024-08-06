@@ -22,4 +22,8 @@ class KTagDeleteRelationRequest < ApplicationRecord
     approved: 1,
     denied: 2
   }
+
+  def reviewed?
+    !self.not_reviewed?
+  end
 end

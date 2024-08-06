@@ -7,7 +7,7 @@ class TagSearchService < BaseService
     @limit   = options.delete(:limit).to_i
     @options = options
 
-    results   = from_elasticsearch if Chewy.enabled?
+    # results   = from_elasticsearch if Chewy.enabled?
     results ||= from_database
 
     results

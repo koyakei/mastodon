@@ -4,7 +4,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
   include FormattingHelper
 
   # Please update `app/javascript/mastodon/api_types/statuses.ts` when making changes to the attributes
-  # has_many :k_tag_add_relation_requests, serializer: REST::KTagAddRelationRequestForUserSerializer
+  has_many :k_tag_add_relation_requests, serializer: REST::KTagAddRelationRequestForUserSerializer
 
   has_many :k_tag_relations, serializer: REST::KTagRelationSerializer
   ## 削除リクエスト　追加リクエスト　何にもされてない関係性

@@ -58,6 +58,7 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
 
   def approve
     authorize @api_v1_k_tag_delete_relation_request, :approve?
+    render json: {error: "already reviewed"}, status: :unprocessable_entity if @api_v1_k_tag_delete_relation_request.reviewd?
     # already_created?
     if @api_v1_k_tag_delete_relation_request.approved?
       render json: { error: "already approved" }, status: :unprocessable_entity
@@ -79,7 +80,7 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
         LocalNotificationWorker.perform_async(k_tag_relation.account_id,
         @api_v1_k_tag_delete_relation_request.id , 'KTagDeleteRelationRequest', 'k_tag_appproved_delete_relation_request')
       rescue ActiveRecord::RecordInvalid => exception
-        render json: {error: exception},, status: :unprocessable_entity
+        render json: {error: exception}, status: :unprocessable_entity
       end
       render json: @api_v1_k_tag_delete_relation_request, status: :ok
     end
@@ -87,10 +88,11 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
 
   def deny
     authorize @api_v1_k_tag_delete_relation_request, :deny?
+    render json: {error: "already reviewed"}, status: :unprocessable_entity if @api_v1_k_tag_delete_relation_request.reviewd?
     if @api_v1_k_tag_delete_relation_request.denied?
       render json: { error: "already denied" }, status: :unprocessable_entity
     else
-      if @api_v1_k_tag_delete_relation_request.update(request_status: :denied, review_comment: paarams[:review_comment])
+      if @api_v1_k_tag_delete_relation_request.update(request_status: :denied, review_comment: paarams[:review_comment]|| "")
         #TODO: 残りのリクエストを全部同じ決定にして処理するの？
         @api_v1_k_tag_delete_relation_request.k_tag_relation.undiscard ## error catch しなくていいの？　過去に一回削除承認しても拒否で戻せるように　押し間違い対応
         LocalNotificationWorker.perform_async(k_tag_relation.account_id,

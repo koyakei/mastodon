@@ -29,6 +29,7 @@ class SearchService < BaseService
   private
 
   def perform_k_tags_search!
+    Rails.logger.debug "afsdsdfs"
     KTagSearchService.new.call(
       @query,
       limit: @limit,
@@ -36,7 +37,7 @@ class SearchService < BaseService
       exclude_unreviewed: @options[:exclude_unreviewed]
     )
   end
-  
+
   def perform_accounts_search!
     AccountSearchService.new.call(
       @query,

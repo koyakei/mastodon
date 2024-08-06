@@ -6,7 +6,7 @@ namespace :api, format: false do
 
   # JSON / REST API
   namespace :v1 do
-    resources :k_tags
+
     resources :k_tag_relations, only: [:index, :create, :show, :destroy]
     resources :k_tag_add_relation_requests , only: [:index, :create, :show]do
       member do
@@ -221,6 +221,13 @@ namespace :api, format: false do
       resource :pin, only: :create, controller: 'accounts/pins'
       post :unpin, to: 'accounts/pins#destroy'
       resource :note, only: :create, controller: 'accounts/notes'
+    end
+
+    resources :k_tags, only: [:show] do
+      member do
+        post :follow
+        post :unfollow
+      end
     end
 
     resources :tags, only: [:show] do

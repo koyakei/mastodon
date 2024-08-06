@@ -32,4 +32,8 @@ class KTagAddRelationRequest < ApplicationRecord
       errors.add(:base, "A not_reviewed request with the same k_tag_id, requester_id, and status_id already exists.")
     end
   end
+
+  def reviewed?
+    !self.not_reviewed?
+  end
 end
