@@ -51,6 +51,7 @@ class KTag < ApplicationRecord
         where(arel_table[:name].lower.in(names))
       end
     end
+    
     def find_or_create_by_names(name_or_names)
       names = Array(name_or_names).map { |str| [normalize(str), str] }.uniq(&:first)
 

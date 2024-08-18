@@ -1,6 +1,6 @@
 class KTagsController < ApplicationController
   include Authorization
-  
+
   before_action :authenticate_user!
   before_action :set_k_tag, only: %i[ show edit update destroy ]
   # before_action :check_statuses_limit, only: [:index]
@@ -10,11 +10,31 @@ class KTagsController < ApplicationController
   # conversations as quasi-unlimited, it would be too much work to render more
   # than this anyway
   CONTEXT_LIMIT = 4_096
-  
+
 
   # GET /k_tags
   def index
-    @k_tags = KTag.all
+  #   @notifications = Notification.all
+  #   # render json: @notifications, each_serializer: REST::NotificationSerializer
+  # # 各通知をデバッグログに出力
+  # @notifications.each do |notification|
+  #   # Rails.logger.debug REST::KTagAddRelationRequestSerializer.new(notification.k_tag_add_relation_request).as_json
+  #   # Rails.logger.debug notification.k_tag_add_relation_request
+  #   Rails.logger.debug "fdasdfsf"
+  #   Rails.logger.debug notification
+  # end
+  @statuses = Status.all
+# @statuses.each do |status|
+#   Rails.logger
+# end
+    render json: @statuses, each_serializer: REST::StatusSerializer
+    # @notification.not_reviewed!
+    # @k_tag_add_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || "")
+  # render json: @notifications[].k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
+  # render json: @notifications[1], serializer: REST::NotificationSerializer
+
+
+    # @k_tags = KTag.all
   end
 
   # GET /k_tags/1

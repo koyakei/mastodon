@@ -29,7 +29,6 @@ class SearchService < BaseService
   private
 
   def perform_k_tags_search!
-    Rails.logger.debug "afsdsdfs"
     KTagSearchService.new.call(
       @query,
       limit: @limit,
