@@ -1,6 +1,6 @@
 {
   "name": "Mastodon on GitHub Codespaces",
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": "../compose.yaml",
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "extensions": [
@@ -29,6 +29,8 @@
     }
   },
 
+  "remoteUser": "root",
+
   "otherPortsAttributes": {
     "onAutoForward": "silent"
   },
@@ -43,7 +45,7 @@
   },
 
   "onCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
-  "postCreateCommand": ".devcontainer/post-create.sh",
+  "postCreateCommand": "COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bin/setup",
   "waitFor": "postCreateCommand",
 
   "customizations": {
