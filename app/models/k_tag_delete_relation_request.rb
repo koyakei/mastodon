@@ -22,7 +22,7 @@ class KTagDeleteRelationRequest < ApplicationRecord
     approved: 1,
     denied: 2
   }
-
+  attribute :request_status, :integer
   def reviewed?
     !self.not_reviewed?
   end

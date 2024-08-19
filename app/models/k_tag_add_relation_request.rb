@@ -7,7 +7,7 @@
 #  requester_id      :bigint(8)        not null
 #  target_account_id :bigint(8)        not null
 #  status_id         :bigint(8)        not null
-#  request_status    :integer          default(0), not null
+#  request_status    :integer          default("not_reviewed"), not null
 #  request_comment   :text             default(""), not null
 #  review_comment    :text             default(""), not null
 #  created_at        :datetime         not null

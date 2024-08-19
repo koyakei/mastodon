@@ -40,7 +40,11 @@
   "customizations": {
     "vscode": {
       "settings": {},
-      "extensions": ["EditorConfig.EditorConfig", "webben.browserslist"]
+      "extensions": [
+        "EditorConfig.EditorConfig",
+        "webben.browserslist",
+        "KoichiSasada.vscode-rdbg"
+      ]
     }
   }
 }

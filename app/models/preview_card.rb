@@ -32,7 +32,6 @@
 #  link_type                    :integer
 #  published_at                 :datetime
 #  image_description            :string           default(""), not null
-#  author_account_id            :bigint(8)
 #
 
 class PreviewCard < ApplicationRecord

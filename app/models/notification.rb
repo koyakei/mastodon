@@ -13,7 +13,6 @@
 #  from_account_id :bigint(8)        not null
 #  type            :string
 #  filtered        :boolean          default(FALSE), not null
-#  group_key       :string
 #
 
 class Notification < ApplicationRecord
