@@ -20,7 +20,7 @@
   "compounds": [
     {
       "name": "Server/Client",
-      "configurations": ["Debug Rails","Sidekiq"],
+      "configurations": ["Debug Rails",],
       // "preLaunchTask": "Build",
       "stopAll": true,
 
