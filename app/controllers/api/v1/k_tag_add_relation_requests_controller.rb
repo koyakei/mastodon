@@ -31,6 +31,10 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
           current_user.account_id,
           k_tag_relations: k_tag_relation
         )
+        KTagTraidingHistory.create!(
+          account_id: current_user.account_id,
+          k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id],
+          status_id: api_v1_k_tag_add_relation_request_params[:status_id])
         render json: k_tag_relation.status, status: :created, serializer: REST::StatusSerializer
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
@@ -72,6 +76,10 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
           current_user.account_id,
           k_tag_add_relation_request: @k_tag_add_relation_request
         )
+        KTagTraidingHistory.create!(
+          account_id: current_user.account_id,
+          k_tag_id: @k_tag_add_relation_request.k_tag_id,
+          status_id: @k_tag_add_relation_request.status_id)
         render json: @k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
       rescue ActiveRecord::RecordInvalid => exception
         render :edit, status: :unprocessable_entity

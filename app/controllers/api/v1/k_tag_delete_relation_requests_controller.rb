@@ -77,6 +77,11 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
           current_user.account_id,
           k_tag: true
         )
+        KTagTraidingHistory.create!(
+          account_id: current_user.account_id,
+          k_tag_id: @api_v1_k_tag_delete_relation_request.k_tag_relation.k_tag_id,
+          status_id: @api_v1_k_tag_delete_relation_request.k_tag_relation.status_id
+          trade_count: -1)
         LocalNotificationWorker.perform_async(k_tag_relation.account_id,
         @api_v1_k_tag_delete_relation_request.id , 'KTagDeleteRelationRequest', 'k_tag_appproved_delete_relation_request')
       rescue ActiveRecord::RecordInvalid => exception
