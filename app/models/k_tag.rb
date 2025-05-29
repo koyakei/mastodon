@@ -6,7 +6,7 @@
 #  name            :text
 #  description     :text
 #  account_id      :bigint(8)        not null
-#  following_count :integer
+#  followers_count :integer          default(0)
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #

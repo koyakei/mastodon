@@ -489,15 +489,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.index ["tag_id"], name: "index_featured_tags_on_tag_id"
   end
 
-  create_table "follow_k_tags", force: :cascade do |t|
-    t.bigint "k_tag_id", null: false
-    t.bigint "account_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_follow_k_tags_on_account_id"
-    t.index ["k_tag_id"], name: "index_follow_k_tags_on_k_tag_id"
-  end
-
   create_table "follow_recommendation_mutes", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "target_account_id", null: false
@@ -608,9 +599,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["k_tag_id"], name: "index_k_tag_add_relation_requests_on_k_tag_id"
+    t.index ["requester_id", "k_tag_id", "status_id"], name: "idx_on_requester_id_k_tag_id_status_id_1241c362a5", unique: true
     t.index ["requester_id"], name: "index_k_tag_add_relation_requests_on_requester_id"
     t.index ["status_id"], name: "index_k_tag_add_relation_requests_on_status_id"
-    t.index ["target_account_id", "requester_id", "k_tag_id", "status_id"], name: "idx_on_target_account_id_requester_id_k_tag_id_stat_6d373bf228", unique: true
     t.index ["target_account_id"], name: "index_k_tag_add_relation_requests_on_target_account_id"
   end
 
@@ -619,6 +610,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.bigint "requester_id", null: false
     t.text "request_comment", default: "", null: false
     t.text "review_comment", default: "", null: false
+    t.integer "request_status", default: 0, null: false
+    t.datetime "discarded_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["k_tag_relation_id"], name: "index_k_tag_delete_relation_requests_on_k_tag_relation_id"
@@ -631,6 +624,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["account_id", "k_tag_id"], name: "index_k_tag_follows_on_account_id_and_k_tag_id", unique: true
     t.index ["account_id"], name: "index_k_tag_follows_on_account_id"
     t.index ["k_tag_id"], name: "index_k_tag_follows_on_k_tag_id"
   end
@@ -639,18 +633,32 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.bigint "account_id", null: false
     t.bigint "k_tag_id", null: false
     t.bigint "status_id", null: false
+    t.boolean "is_fixed", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_k_tag_relations_on_account_id"
+    t.index ["k_tag_id", "status_id"], name: "index_k_tag_relations_on_k_tag_id_and_status_id", unique: true
     t.index ["k_tag_id"], name: "index_k_tag_relations_on_k_tag_id"
     t.index ["status_id"], name: "index_k_tag_relations_on_status_id"
+  end
+
+  create_table "k_tag_trading_history", force: :cascade do |t|
+    t.bigint "k_tag_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "status_id", null: false
+    t.integer "trade_count", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_k_tag_trading_history_on_account_id"
+    t.index ["k_tag_id"], name: "index_k_tag_trading_history_on_k_tag_id"
+    t.index ["status_id"], name: "index_k_tag_trading_history_on_status_id"
   end
 
   create_table "k_tags", force: :cascade do |t|
     t.text "name"
     t.text "description"
     t.bigint "account_id", null: false
-    t.integer "following_count"
+    t.integer "followers_count", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_k_tags_on_account_id"
@@ -729,10 +737,10 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
   end
 
   create_table "mentions", force: :cascade do |t|
-    t.bigint "status_id"
+    t.bigint "status_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.bigint "account_id"
+    t.bigint "account_id", null: false
     t.boolean "silent", default: false, null: false
     t.index ["account_id", "status_id"], name: "index_mentions_on_account_id_and_status_id", unique: true
     t.index ["status_id"], name: "index_mentions_on_status_id"
@@ -791,6 +799,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.bigint "from_account_id", null: false
     t.string "type"
     t.boolean "filtered", default: false, null: false
+    t.string "group_key"
+    t.index ["account_id", "group_key"], name: "index_notifications_on_account_id_and_group_key", where: "(group_key IS NOT NULL)"
     t.index ["account_id", "id", "type"], name: "index_notifications_on_account_id_and_id_and_type", order: { id: :desc }
     t.index ["account_id", "id", "type"], name: "index_notifications_on_filtered", order: { id: :desc }, where: "(filtered = false)"
     t.index ["activity_id", "activity_type"], name: "index_notifications_on_activity_id_and_activity_type"
@@ -946,6 +956,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.integer "link_type"
     t.datetime "published_at"
     t.string "image_description", default: "", null: false
+    t.bigint "author_account_id"
+    t.index ["author_account_id"], name: "index_preview_cards_on_author_account_id", where: "(author_account_id IS NOT NULL)"
     t.index ["url"], name: "index_preview_cards_on_url", unique: true
   end
 
@@ -1378,8 +1390,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
   add_foreign_key "favourites", "statuses", name: "fk_b0e856845e", on_delete: :cascade
   add_foreign_key "featured_tags", "accounts", on_delete: :cascade
   add_foreign_key "featured_tags", "tags", on_delete: :cascade
-  add_foreign_key "follow_k_tags", "accounts"
-  add_foreign_key "follow_k_tags", "k_tags"
   add_foreign_key "follow_recommendation_mutes", "accounts", column: "target_account_id", on_delete: :cascade
   add_foreign_key "follow_recommendation_mutes", "accounts", on_delete: :cascade
   add_foreign_key "follow_recommendation_suppressions", "accounts", on_delete: :cascade
@@ -1402,6 +1412,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
   add_foreign_key "k_tag_relations", "accounts"
   add_foreign_key "k_tag_relations", "k_tags"
   add_foreign_key "k_tag_relations", "statuses"
+  add_foreign_key "k_tag_trading_history", "accounts"
+  add_foreign_key "k_tag_trading_history", "k_tags"
+  add_foreign_key "k_tag_trading_history", "statuses"
   add_foreign_key "k_tags", "accounts"
   add_foreign_key "list_accounts", "accounts", on_delete: :cascade
   add_foreign_key "list_accounts", "follow_requests", on_delete: :cascade
@@ -1436,6 +1449,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
   add_foreign_key "polls", "accounts", on_delete: :cascade
   add_foreign_key "polls", "statuses", on_delete: :cascade
   add_foreign_key "preview_card_trends", "preview_cards", on_delete: :cascade
+  add_foreign_key "preview_cards", "accounts", column: "author_account_id", on_delete: :nullify
   add_foreign_key "report_notes", "accounts", on_delete: :cascade
   add_foreign_key "report_notes", "reports", on_delete: :cascade
   add_foreign_key "reports", "accounts", column: "action_taken_by_account_id", name: "fk_bca45b75fd", on_delete: :nullify

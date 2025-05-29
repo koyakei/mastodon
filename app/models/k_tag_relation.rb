@@ -6,6 +6,7 @@
 #  account_id :bigint(8)        not null
 #  k_tag_id   :bigint(8)        not null
 #  status_id  :bigint(8)        not null
+#  is_fixed   :boolean          default(FALSE), not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #

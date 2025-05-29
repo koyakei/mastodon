@@ -7,6 +7,8 @@
 #  requester_id      :bigint(8)        not null
 #  request_comment   :text             default(""), not null
 #  review_comment    :text             default(""), not null
+#  request_status    :integer          default(0), not null
+#  discarded_at      :datetime
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #

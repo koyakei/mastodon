@@ -1,4 +1,5 @@
 class CreateKTagFollows < ActiveRecord::Migration[7.1]
+  disable_ddl_transaction! 
   def change
     create_table :k_tag_follows do |t|
       t.references :k_tag, null: false, foreign_key: true
@@ -6,6 +7,6 @@ class CreateKTagFollows < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
-    add_index :single_follow, [:account_id, :k_tag_id], unique: true
+    add_index :k_tag_follows, [:account_id, :k_tag_id], unique: true, algorithm: :concurrently 
   end
 end
