@@ -91,9 +91,11 @@ class StatusContent extends PureComponent {
     location: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired
   };
-
   state = {
-    tags: [],
+    tags: this.props.status.get('k_tag_relations').map(it => ({
+      id: it.get('k_tag_id'),
+      name: it.get('k_tag').get('name'), state: TAG_STATES.ADDED
+    })), //this.props.status.k_tag_relation
     suggestions: [],
     tagStates: {},
     loading: false,
@@ -186,26 +188,23 @@ class StatusContent extends PureComponent {
     const { tags, suggestions, loading, error } = this.state;
 
     return (
-      <div className="parent-container" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-        <ReactTagAutocomplete
-          tags={tags}
-          suggestions={suggestions}
-          onAddition={this.handleTagAddition}
-          onDelete={this.handleTagDeletion}
-          onInput={this.fetchSuggestions}
-          labelText="タグを追加"
-          tagComponent={this.TagComponent}
-          noSuggestionsText={error || "該当するタグが見つかりません"}
-          loading={loading}
-          classNames={{
-            root: 'react-tags',
-            searchInput: 'search-input',
-            suggestions: 'suggestions-list',
-            suggestionActive: 'active-suggestion'
-          }}
-        />
-        {loading && <div className="loading-indicator">検索中...</div>}
-      </div>
+      <ReactTagAutocomplete
+        tags={tags}
+        suggestions={suggestions}
+        onAddition={this.handleTagAddition}
+        onDelete={this.handleTagDeletion}
+        onInput={this.fetchSuggestions}
+        labelText="タグを追加"
+        tagComponent={this.TagComponent}
+        noSuggestionsText={error || "該当するタグが見つかりません"}
+        loading={loading}
+        classNames={{
+          root: 'react-tags',
+          searchInput: 'search-input',
+          suggestions: 'suggestions-list',
+          suggestionActive: 'active-suggestion'
+        }}
+      />
     );
   }
 
