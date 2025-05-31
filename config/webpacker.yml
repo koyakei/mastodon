@@ -52,7 +52,8 @@ default: &default
 
 development:
   <<: *default
-
+  source_map: true
+  devtool: cheap-module-source-map
   compile: true
 
   # Reference: https://webpack.js.org/configuration/dev-server/

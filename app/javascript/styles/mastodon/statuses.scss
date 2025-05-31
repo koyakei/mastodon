@@ -39,6 +39,7 @@
     }
 
     &:last-child {
+
       .detailed-status,
       .status,
       .load-more {
@@ -48,6 +49,7 @@
     }
 
     &:first-child {
+
       .detailed-status,
       .status,
       .load-more {
@@ -55,6 +57,7 @@
       }
 
       &:last-child {
+
         .detailed-status,
         .status,
         .load-more {
@@ -63,7 +66,8 @@
       }
     }
 
-    @media screen and (width <= 740px) {
+    @media screen and (width <=740px) {
+
       .detailed-status,
       .status,
       .load-more {
@@ -149,4 +153,23 @@
       line-height: 23.15px;
     }
   }
+}
+
+
+.tag-LOADING {
+  background: #96a553;
+}
+
+.tag-ADDED {
+  border-left: 4px solid #28a745;
+  background: #08a13b;
+}
+
+.tag-ADD_REQUESTED {
+  border: 2px dashed #0772ff;
+  background: #2c42e9;
+}
+
+.tag-DELETE_REQUESTED {
+  background: #2c42e9;
 }

@@ -73,6 +73,21 @@ module.exports = (api) => {
           ['@babel/env', { ...envOptions, modules: 'commonjs' }],
         ],
       },
+      {
+        test: /node_modules\/react-tag-autocomplete/,
+        presets: [
+          ['@babel/env', {
+            ...envOptions,
+            targets: 'defaults',
+            modules: false,
+            exclude: ['transform-typeof-symbol']
+          }]
+        ],
+        plugins: [
+          '@babel/plugin-proposal-nullish-coalescing-operator',
+          '@babel/plugin-proposal-optional-chaining'
+        ]
+      }
     ],
   };
 

@@ -2,22 +2,27 @@ import PropTypes from 'prop-types';
 import { PureComponent } from 'react';
 
 import { FormattedMessage, injectIntl } from 'react-intl';
-
 import classnames from 'classnames';
 import { Link, withRouter } from 'react-router-dom';
 
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import { connect } from 'react-redux';
+import ReactTagAutocomplete from 'react-tag-autocomplete';
 
+import api, { getLinks } from '../api';
 import ChevronRightIcon from '@/material-icons/400-24px/chevron_right.svg?react';
-import { Icon }  from 'mastodon/components/icon';
+import { Icon } from 'mastodon/components/icon';
 import PollContainer from 'mastodon/containers/poll_container';
 import { identityContextPropShape, withIdentity } from 'mastodon/identity_context';
 import { autoPlayGif, languages as preloadedLanguages } from 'mastodon/initial_state';
 
-
 const MAX_HEIGHT = 706; // 22px * 32 (+ 2px padding at the top)
-
+const TAG_STATES = {
+  LOADING: 'tag-LOADING',
+  ADDED: 'tag-ADDED',
+  ADD_REQUESTED: 'tag-ADD_REQUESTED',
+  DELETE_REQUESTED: 'tag-DELETE_REQUESTED'
+};
 /**
  *
  * @param {any} status
@@ -34,13 +39,13 @@ class TranslateButton extends PureComponent {
     onClick: PropTypes.func,
   };
 
-  render () {
+  render() {
     const { translation, onClick } = this.props;
 
     if (translation) {
-      const language     = preloadedLanguages.find(lang => lang[0] === translation.get('detected_source_language'));
+      const language = preloadedLanguages.find(lang => lang[0] === translation.get('detected_source_language'));
       const languageName = language ? language[2] : translation.get('detected_source_language');
-      const provider     = translation.get('provider');
+      const provider = translation.get('provider');
 
       return (
         <div className='translate-button'>
@@ -88,10 +93,125 @@ class StatusContent extends PureComponent {
   };
 
   state = {
-    hidden: true,
+    tags: [],
+    suggestions: [],
+    tagStates: {},
+    loading: false,
+    error: null
   };
 
-  _updateStatusLinks () {
+
+
+  fetchSuggestions = async (query) => {
+    this.setState({ loading: true, error: null });
+
+    try {
+      const response = await fetch(`/api/v2/search?q=${encodeURIComponent(query)}&type=k_tags`,);
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+      const data = await response.json();
+
+      this.setState({
+        suggestions: data.k_tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          state: TAG_STATES.LOADING,
+          description: tag.description,
+          isOwned: tag.is_owned
+        }))
+      });
+    } catch (error) {
+      console.error('検索エラー:', error);
+      this.setState({ error: 'サジェストの取得に失敗しました' });
+    } finally {
+      this.setState({ loading: false });
+    }
+  };
+
+  addRelationRequest = (kTagId, statusId) => {
+    api().post(`/api/v1/k_tag_add_relation_requests`, {
+      "k_tag_id": kTagId, "status_id": statusId
+    }).then(function (response) {
+      return response;
+    }).catch(function (error) {
+      return error;
+    });
+  };
+
+  handleTagAddition = (tag) => {
+    try {
+      this.setState(prevState => ({
+        tags: [...prevState.tags, {
+          id: tag.id,
+          name: tag.name,
+          state: TAG_STATES.LOADING,
+          meta: {
+            description: tag.description,
+            isOwned: tag.isOwned
+          }
+        }]
+      }));
+
+      const response = this.addRelationRequest(tag.id, this.props.status.get('id'));
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+      const data = response.json();
+
+    } catch (error) {
+      console.error('検索エラー:', error);
+      this.setState({ error: 'サジェストの取得に失敗しました' });
+    } finally {
+      this.setState({ loading: false });
+    }
+
+
+  };
+
+  handleTagDeletion = (index) => {
+    this.setState(prevState => ({
+      tags: prevState.tags.filter((_, i) => i !== index)
+    }));
+  };
+  TagComponent({ tag, removeButtonText, onDelete }) {
+    return (
+      <button type='button' className={tag.state} title={`${tag.name}`} onClick={onDelete}>
+        {tag.name}
+      </button>
+    );
+  }
+
+  renderTagAutocomplete() {
+    const { tags, suggestions, loading, error } = this.state;
+
+    return (
+      <div className="parent-container" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+        <ReactTagAutocomplete
+          tags={tags}
+          suggestions={suggestions}
+          onAddition={this.handleTagAddition}
+          onDelete={this.handleTagDeletion}
+          onInput={this.fetchSuggestions}
+          labelText="タグを追加"
+          tagComponent={this.TagComponent}
+          noSuggestionsText={error || "該当するタグが見つかりません"}
+          loading={loading}
+          classNames={{
+            root: 'react-tags',
+            searchInput: 'search-input',
+            suggestions: 'suggestions-list',
+            suggestionActive: 'active-suggestion'
+          }}
+        />
+        {loading && <div className="loading-indicator">検索中...</div>}
+      </div>
+    );
+  }
+
+
+
+  _updateStatusLinks() {
     const node = this.node;
 
     if (!node) {
@@ -132,10 +252,10 @@ class StatusContent extends PureComponent {
       const { collapsible, onClick } = this.props;
 
       const collapsed =
-          collapsible
-          && onClick
-          && node.clientHeight > MAX_HEIGHT
-          && status.get('spoiler_text').length === 0;
+        collapsible
+        && onClick
+        && node.clientHeight > MAX_HEIGHT
+        && status.get('spoiler_text').length === 0;
 
       onCollapsedToggle(collapsed);
     }
@@ -167,11 +287,11 @@ class StatusContent extends PureComponent {
     }
   };
 
-  componentDidMount () {
+  componentDidMount() {
     this._updateStatusLinks();
   }
 
-  componentDidUpdate () {
+  componentDidUpdate() {
     this._updateStatusLinks();
   }
 
@@ -200,8 +320,8 @@ class StatusContent extends PureComponent {
       return;
     }
 
-    const [ startX, startY ] = this.startXY;
-    const [ deltaX, deltaY ] = [Math.abs(e.clientX - startX), Math.abs(e.clientY - startY)];
+    const [startX, startY] = this.startXY;
+    const [deltaX, deltaY] = [Math.abs(e.clientX - startX), Math.abs(e.clientY - startY)];
 
     let element = e.target;
     while (element) {
@@ -237,7 +357,7 @@ class StatusContent extends PureComponent {
     this.node = c;
   };
 
-  render () {
+  render() {
     const { status, intl, statusContent } = this.props;
 
     const hidden = this.props.onExpandedToggle ? !this.props.expanded : this.state.hidden;
@@ -315,16 +435,21 @@ class StatusContent extends PureComponent {
       );
     } else {
       return (
-        <div className={classNames} ref={this.setRef} tabIndex={0} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <div className='status__content__text status__content__text--visible translate' lang={language} dangerouslySetInnerHTML={content} />
+        <>
+          <div>
+            {this.renderTagAutocomplete()}
+          </div>
+          <div className={classNames} ref={this.setRef} tabIndex={0} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
+            <div className='status__content__text status__content__text--visible translate' lang={language} dangerouslySetInnerHTML={content} />
 
-          {poll}
-          {translateButton}
-        </div>
+            {poll}
+            {translateButton}
+          </div>
+        </>
       );
     }
   }
-
 }
+
 
 export default withRouter(withIdentity(connect(mapStateToProps)(injectIntl(StatusContent))));

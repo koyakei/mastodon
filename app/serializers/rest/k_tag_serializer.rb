@@ -5,6 +5,7 @@ class REST::KTagSerializer < ActiveModel::Serializer
   attributes :name, :id , :description, :is_owned, :account_id
 
   attribute :following, if: :current_user?
+  # has_many :k_tag_trading_history
 
   # has_one :account, serializer: REST::AccountSerializer
 

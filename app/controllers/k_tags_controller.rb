@@ -23,11 +23,11 @@ class KTagsController < ApplicationController
   #   Rails.logger.debug "fdasdfsf"
   #   Rails.logger.debug notification
   # end
-  @statuses = Status.all
+  @statuses = KTag.all
 # @statuses.each do |status|
 #   Rails.logger
 # end
-    render json: @statuses, each_serializer: REST::StatusSerializer
+ render json: @statuses, each_serializer: REST::KTagSerializer
     # @notification.not_reviewed!
     # @k_tag_add_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || "")
   # render json: @notifications[].k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
@@ -39,6 +39,7 @@ class KTagsController < ApplicationController
 
   # GET /k_tags/1
   def show
+    render json: @k_tag, serializer: REST::KTagSerializer
   end
 
   # GET /k_tags/new

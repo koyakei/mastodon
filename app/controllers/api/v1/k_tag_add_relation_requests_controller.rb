@@ -25,17 +25,25 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
     if current_user.account.id == KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
       k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id], status_id: api_v1_k_tag_add_relation_request_params[:status_id])
       begin
-        k_tag_relation.save!
-        UpdateStatusService.new.call(
-          k_tag_relation.status,
-          current_user.account_id,
-          k_tag_relations: k_tag_relation
-        )
-        KTagTraidingHistory.create!(
-          account_id: current_user.account_id,
-          k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id],
-          status_id: api_v1_k_tag_add_relation_request_params[:status_id])
-        render json: k_tag_relation.status, status: :created, serializer: REST::StatusSerializer
+        if k_tag_relation.save
+          UpdateStatusService.new.call(
+            k_tag_relation.status,
+            current_user.account_id,
+            k_tag_relations: k_tag_relation
+          )
+          KTagTraidingHistory.create!(
+            account_id: current_user.account_id,
+            k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id],
+            status_id: api_v1_k_tag_add_relation_request_params[:status_id])
+          render json: k_tag_relation.status, status: :created, serializer: REST::StatusSerializer
+        else
+          if k_tag_relation.errors.of_kind?(:k_tag_id, :taken) ||
+            k_tag_relation.errors.any? { |e| e.type == :taken }
+            render json: { error: 'tag relation already exists' }, status: :conflict
+          else
+            render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
+          end
+        end
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
       end

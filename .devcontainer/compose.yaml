@@ -19,6 +19,7 @@ services:
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - ..:/workspaces/mastodon:cached
+      - /workspaces/mastodon/public/system
     environment:
       RAILS_ENV: development
       NODE_ENV: development
