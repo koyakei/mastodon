@@ -22,22 +22,26 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
 
   # POST /api/v1/k_tag_delete_relation_request
   def create
-    logger.debug api_v1_k_tag_delete_relation_request_params[:k_tag_relation_id]
-    logger.debug KTagRelation.find_by(id: api_v1_k_tag_delete_relation_request_params[:k_tag_relation_id])
-    k_tag_relation = KTagRelation.find_by(id: api_v1_k_tag_delete_relation_request_params[:k_tag_relation_id])
+    logger.debug KTagRelation.find_by(
+      k_tag_id: api_v1_k_tag_delete_relation_request_params[:k_tag_id],
+       status_id: api_v1_k_tag_delete_relation_request_params[:status_id])
+    k_tag_relation = KTagRelation.find_by(
+      k_tag_id: api_v1_k_tag_delete_relation_request_params[:k_tag_id],
+       status_id: api_v1_k_tag_delete_relation_request_params[:status_id])
     if k_tag_relation.nil?
       render json: { error: 'KTagRelation not found' }, status: :not_found
     elsif k_tag_relation&.account_id == current_user&.account_id
       # 削除された場合で二重二リクエストが来た場合、自分のものなのに削除リクエストが入る
-      if k_tag_relation.discard
-        UpdateStatusService.new.call(
-          k_tag_relation.status,
-        current_user.account_id,
-        k_tag: true
-      )
-      logger.debug k_tag_relation
+      if k_tag_relation.destroy
+          UpdateStatusService.new.call(
+            k_tag_relation.status,
+          current_user.account_id,
+          k_tag: true
+        )
         # 自分のものを削除できました　レスポンス　http 200 で返すべき　KTagRelation削除メソッドにクライアント側からアクセスするべきなのかも
         render json: k_tag_relation.status, status: :ok, serializer: REST::StatusSerializer
+      else
+        render json: k_tag_relation.status, status: :not_found, serializer: REST::StatusSerializer
       end
     else
       # 他人の所有しているタグだった場合リクエストを送る　通知
@@ -77,10 +81,10 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
           current_user.account_id,
           k_tag: true
         )
-        KTagTraidingHistory.create!(
+        KTagTradingHistory.create!(
           account_id: current_user.account_id,
           k_tag_id: @api_v1_k_tag_delete_relation_request.k_tag_relation.k_tag_id,
-          status_id: @api_v1_k_tag_delete_relation_request.k_tag_relation.status_id
+          status_id: @api_v1_k_tag_delete_relation_request.k_tag_relation.status_id,
           trade_count: -1)
         LocalNotificationWorker.perform_async(k_tag_relation.account_id,
         @api_v1_k_tag_delete_relation_request.id , 'KTagDeleteRelationRequest', 'k_tag_appproved_delete_relation_request')
@@ -130,6 +134,6 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
 
     # Only allow a list of trusted parameters through.
     def api_v1_k_tag_delete_relation_request_params
-      params.permit( :status_id, :k_tag_relation_id, :request_comment, :review_comment)
+      params.permit( :status_id, :k_tag_relation_id,:k_tag_id, :request_comment, :review_comment)
     end
 end

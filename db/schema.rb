@@ -194,8 +194,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.integer "avatar_storage_schema_version"
     t.integer "header_storage_schema_version"
     t.string "devices_url"
-    t.integer "suspension_origin"
     t.datetime "sensitized_at", precision: nil
+    t.integer "suspension_origin"
     t.boolean "trendable"
     t.datetime "reviewed_at", precision: nil
     t.datetime "requested_review_at", precision: nil
@@ -579,12 +579,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
   end
 
   create_table "ip_blocks", force: :cascade do |t|
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
-    t.datetime "expires_at", precision: nil
     t.inet "ip", default: "0.0.0.0", null: false
     t.integer "severity", default: 0, null: false
+    t.datetime "expires_at", precision: nil
     t.text "comment", default: "", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["ip"], name: "index_ip_blocks_on_ip", unique: true
   end
 
@@ -642,16 +642,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
     t.index ["status_id"], name: "index_k_tag_relations_on_status_id"
   end
 
-  create_table "k_tag_trading_history", force: :cascade do |t|
+  create_table "k_tag_trading_histories", force: :cascade do |t|
     t.bigint "k_tag_id", null: false
     t.bigint "account_id", null: false
     t.bigint "status_id", null: false
     t.integer "trade_count", default: 1, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_k_tag_trading_history_on_account_id"
-    t.index ["k_tag_id"], name: "index_k_tag_trading_history_on_k_tag_id"
-    t.index ["status_id"], name: "index_k_tag_trading_history_on_status_id"
+    t.index ["account_id"], name: "index_k_tag_trading_histories_on_account_id"
+    t.index ["k_tag_id"], name: "index_k_tag_trading_histories_on_k_tag_id"
+    t.index ["status_id"], name: "index_k_tag_trading_histories_on_status_id"
   end
 
   create_table "k_tags", force: :cascade do |t|
@@ -1412,9 +1412,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_08_125420) do
   add_foreign_key "k_tag_relations", "accounts"
   add_foreign_key "k_tag_relations", "k_tags"
   add_foreign_key "k_tag_relations", "statuses"
-  add_foreign_key "k_tag_trading_history", "accounts"
-  add_foreign_key "k_tag_trading_history", "k_tags"
-  add_foreign_key "k_tag_trading_history", "statuses"
+  add_foreign_key "k_tag_trading_histories", "accounts"
+  add_foreign_key "k_tag_trading_histories", "k_tags"
+  add_foreign_key "k_tag_trading_histories", "statuses"
   add_foreign_key "k_tags", "accounts"
   add_foreign_key "list_accounts", "accounts", on_delete: :cascade
   add_foreign_key "list_accounts", "follow_requests", on_delete: :cascade

@@ -94,7 +94,7 @@ class StatusContent extends PureComponent {
   state = {
     tags: this.props.status.get('k_tag_relations').map(it => ({
       id: it.get('k_tag_id'),
-      name: it.get('k_tag').get('name'), state: TAG_STATES.ADDED
+      name: it.get('k_tag').get('name'), state: TAG_STATES.ADDED, statusId: it.get('status_id'),
     })), //this.props.status.k_tag_relation
     suggestions: [],
     tagStates: {},
@@ -132,12 +132,8 @@ class StatusContent extends PureComponent {
   };
 
   addRelationRequest = (kTagId, statusId) => {
-    api().post(`/api/v1/k_tag_add_relation_requests`, {
+    return api().post(`/api/v1/k_tag_add_relation_requests`, {
       "k_tag_id": kTagId, "status_id": statusId
-    }).then(function (response) {
-      return response;
-    }).catch(function (error) {
-      return error;
     });
   };
 
@@ -155,11 +151,25 @@ class StatusContent extends PureComponent {
         }]
       }));
 
-      const response = this.addRelationRequest(tag.id, this.props.status.get('id'));
+      this.addRelationRequest(tag.id, this.props.status.get('id')).then( (response) => {
+        if ( !(response.status >= 200 && response.status < 300) &&!(response.status === 409)) throw new Error(`HTTP error! status: ${response.status}`);
+        this.setState(prevState => ({
+          tags: prevState.tags.map(t =>
+            t.id === tag.id ? { ...t, state: TAG_STATES.ADDED } : t
+          )
+        }));
+      }).catch((error) => {
+        console.error('タグ追加リクエスト失敗:', error);
+        this.setState(prevState => ({
+          tags: prevState.tags.map(t =>
+            t.id === tag.id ? { ...t, state: TAG_STATES.ADD_REQUESTED } : t
+          ),
+          error: 'タグの追加に失敗しました'
+        }));
+      });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-      const data = response.json();
+
 
     } catch (error) {
       console.error('検索エラー:', error);
@@ -167,15 +177,33 @@ class StatusContent extends PureComponent {
     } finally {
       this.setState({ loading: false });
     }
-
-
   };
+
 
   handleTagDeletion = (index) => {
-    this.setState(prevState => ({
-      tags: prevState.tags.filter((_, i) => i !== index)
-    }));
+    // 1. 状態チェック（Mapであることを確認）
+    const { tags } = this.state;
+    const targetTag = tags.get(index);
+    api().post(`/api/v1/k_tag_delete_relation_requests`, {
+      "k_tag_id": targetTag.id, "status_id": targetTag.statusId
+    }).then( (response)　=> {
+      if (!(response.status >= 200 && response.status < 300) && !(response.status === 404)) {
+        throw new Error(`HTTPエラー! ステータス: ${response.status}`);
+      }
+      this.setState(prevState => ({ /// Cannot read properties of undefined (reading 'setState')
+        tags: prevState.tags.filter((_, i) => i !== index)
+      }));
+    }).catch((error) => {
+      console.error('削除リクエスト失敗:', error);
+      this.setState(prevState => ({
+        tags: prevState.tags.map(t =>
+          t.id === targetTag.id ? { ...t, state: TAG_STATES.REMOVE_REQUESTED } : t
+        ),
+        error: 'タグの削除に失敗しました'
+      }));
+    });
   };
+
   TagComponent({ tag, removeButtonText, onDelete }) {
     return (
       <button type='button' className={tag.state} title={`${tag.name}`} onClick={onDelete}>
