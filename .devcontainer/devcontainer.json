@@ -9,8 +9,6 @@
   "forwardPorts": [
     3000,
     4000,
-    1234,
-    9223
   ],
   "portsAttributes": {
     "3000": {

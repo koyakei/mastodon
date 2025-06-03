@@ -22,17 +22,6 @@ class StatusesIndex < Chewy::Index
     },
 
     analyzer: {
-      word_join_analyzer: {
-        type: 'custom',
-        filter: [
-          'word_joiner'
-        ],
-        tokenizer: {sudachi_tokenizer: {
-          type: 'sudachi_tokenizer',
-          discard_punctuation: true,
-          ignore_unavailable: true,
-        }},
-      },
       verbatim: {
         tokenizer: 'uax_url_email',
         filter: %w(lowercase),

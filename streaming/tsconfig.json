@@ -6,10 +6,7 @@
     "moduleResolution": "NodeNext",
     "noUnusedParameters": false,
     "tsBuildInfoFile": "../tmp/cache/streaming/tsconfig.tsbuildinfo",
-    "paths": {},
-    "sourceMap": true,
-    "inlineSources": true,
-    "declaration": false
+    "paths": {}
   },
   "include": ["./*.js"]
 }
