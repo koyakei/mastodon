@@ -46,6 +46,9 @@ class Notification < ApplicationRecord
     follow: {
       filterable: true,
     }.freeze,
+    follow_k_tag: {
+      filterable: true,
+    }.freeze,
     follow_request: {
       filterable: true,
     }.freeze,
@@ -73,6 +76,24 @@ class Notification < ApplicationRecord
     'admin.report': {
       filterable: false,
     }.freeze,
+    k_tag_add_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_delete_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_denied_delete_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_denied_add_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_approved_delete_relation_request: {
+      filterable: true,
+    }.freeze,
+    k_tag_approved_add_relation_request: {
+      filterable: true,
+    }.freeze,
   }.freeze
 
   TYPES = PROPERTIES.keys.freeze
@@ -85,6 +106,7 @@ class Notification < ApplicationRecord
     poll: [poll: :status],
     update: :status,
     'admin.report': [report: :target_account],
+    k_tag_add_relation_request: [:k_tag_add_relation_request]
   }.freeze
 
   belongs_to :account, optional: true
@@ -102,6 +124,9 @@ class Notification < ApplicationRecord
     belongs_to :account_relationship_severance_event, inverse_of: false
     belongs_to :account_warning, inverse_of: false
     belongs_to :generated_annual_report, inverse_of: false
+    belongs_to :k_tag_relation, inverse_of: :notification ## tagged notification
+    belongs_to :k_tag_add_relation_request, inverse_of: :notification # requested approved denied
+    belongs_to :k_tag_delete_relation_request, inverse_of: :notification
   end
 
   validates :type, inclusion: { in: TYPES }
@@ -112,6 +137,7 @@ class Notification < ApplicationRecord
     @type ||= (super || LEGACY_TYPE_CLASS_MAP[activity_type]).to_sym
   end
 
+  # ktag 系ではここはいじらないでいく
   def target_status
     case type
     when :status, :update
@@ -198,7 +224,14 @@ class Notification < ApplicationRecord
       self.from_account_id = activity&.status&.account_id
     when 'Account'
       self.from_account_id = activity&.id
+    when 'KTagRelation'
+      self.from_account_id = activity&.k_tag_relation&.account_id
+    when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく
+      self.from_account_id = activity&.k_tag_add_relation_request&.requester&.id
+    when 'KTagDeleteRelationRequest'
+      self.from_account_id = activity&.k_tag_delete_relation_request&.requester&.id
     when 'AccountRelationshipSeveranceEvent', 'AccountWarning', 'GeneratedAnnualReport'
+
       # These do not really have an originating account, but this is mandatory
       # in the data model, and the recipient's account will by definition
       # always exist

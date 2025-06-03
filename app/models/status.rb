@@ -84,7 +84,8 @@ class Status < ApplicationRecord
   has_many :mentions, dependent: :destroy, inverse_of: :status
   has_many :mentioned_accounts, through: :mentions, source: :account, class_name: 'Account'
   has_many :media_attachments, dependent: :nullify
-
+  has_many :k_tag_relations
+  has_many :k_tags, through: :k_tag_relations
   # The `dependent` option is enabled by the initial `mentions` association declaration
   has_many :active_mentions, -> { active }, class_name: 'Mention', inverse_of: :status # rubocop:disable Rails/HasManyOrHasOneDependent
 
@@ -123,6 +124,7 @@ class Status < ApplicationRecord
   scope :reply_to_account, -> { where(arel_table[:in_reply_to_account_id].eq arel_table[:account_id]) }
   scope :without_reblogs, -> { where(statuses: { reblog_of_id: nil }) }
   scope :tagged_with, ->(tag_ids) { joins(:statuses_tags).where(statuses_tags: { tag_id: tag_ids }) }
+  scope :k_tagged_with, ->(k_tag_ids) { joins(:k_tag_relations).where(k_tag_relations: { k_tag_id: k_tag_ids }) }
   scope :not_excluded_by_account, ->(account) { where.not(account_id: account.excluded_from_timeline_account_ids) }
   scope :not_domain_blocked_by_account, ->(account) { account.excluded_from_timeline_domains.blank? ? left_outer_joins(:account) : left_outer_joins(:account).merge(Account.not_domain_blocked_by_account(account)) }
   scope :tagged_with_all, lambda { |tag_ids|
@@ -132,6 +134,17 @@ class Status < ApplicationRecord
       SQL
     end
   }
+  scope :k_tagged_with_all, lambda { |k_tag_ids|
+    Array(k_tag_ids).map(&:to_i).reduce(self) do |result, id|
+      result.where(<<~SQL.squish, k_tag_id: id)
+        EXISTS(SELECT 1 FROM k_tag_relations WHERE k_tag_relations.status_id = statuses.id AND k_tag_relations.k_tag_id = :k_tag_id)
+      SQL
+    end
+  }
+  has_many :k_tag_add_relation_requests
+
+  # k tag relation についている　追加されているタグを読み込む　それぞれについているadding relation を呼び出す
+  scope :adding_k_tag_relations_yourself, -> (account){ joins(:k_tag_add_relation_requests).where(k_tag_add_relation_requests: { account_id: account.account_id }) }
   scope :tagged_with_none, lambda { |tag_ids|
     where('NOT EXISTS (SELECT * FROM statuses_tags forbidden WHERE forbidden.status_id = statuses.id AND forbidden.tag_id IN (?))', tag_ids)
   }
@@ -163,6 +176,8 @@ class Status < ApplicationRecord
                    :conversation,
                    :status_stat,
                    :tags,
+                   :k_tags,
+                   :k_tag_relations,
                    :preloadable_poll,
                    quote: { status: { account: [:account_stat, user: :role] } },
                    preview_cards_status: { preview_card: { author_account: [:account_stat, user: :role] } },

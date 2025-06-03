@@ -10,6 +10,7 @@ class TagFeed < PublicFeed
   # @option [Enumerable<String>] :all
   # @option [Enumerable<String>] :none
   # @option [Boolean] :local
+  # @option [Boolean] :local
   # @option [Boolean] :remote
   # @option [Boolean] :only_media
   def initialize(tag, account, options = {})

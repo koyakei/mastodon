@@ -15,7 +15,6 @@ class StatusesSearchService < BaseService
         'search.limit' => @limit,
         'search.backend' => Chewy.enabled? ? 'elasticsearch' : 'database'
       )
-
       status_search_results.tap do |results|
         span.set_attribute('search.results.count', results.size)
       end
@@ -25,7 +24,7 @@ class StatusesSearchService < BaseService
   private
 
   def status_search_results
-    request             = parsed_query.request
+    request = parsed_query.request
     results             = request.collapse(field: :id).order(id: { order: :desc }).limit(@limit).offset(@offset).objects.compact
     account_ids         = results.map(&:account_id)
     account_domains     = results.map(&:account_domain)

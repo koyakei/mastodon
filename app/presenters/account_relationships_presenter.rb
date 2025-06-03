@@ -16,7 +16,11 @@ class AccountRelationshipsPresenter
     @blocked_by      = cached[:blocked_by].merge(Account.blocked_by_map(@uncached_account_ids, @current_account_id))
     @muting          = cached[:muting].merge(Account.muting_map(@uncached_account_ids, @current_account_id))
     @requested       = cached[:requested].merge(Account.requested_map(@uncached_account_ids, @current_account_id))
+    @add_relation_requested       = cached[:requested].merge(Account.requested_map(@uncached_account_ids, @current_account_id))
+    @delete_relation_requested       = cached[:requested].merge(Account.requested_map(@uncached_account_ids, @current_account_id))
     @requested_by    = cached[:requested_by].merge(Account.requested_by_map(@uncached_account_ids, @current_account_id))
+    @add_relation_requested_by    = cached[:requested_by].merge(Account.requested_by_map(@uncached_account_ids, @current_account_id))
+    @delete_relation_requested_by    = cached[:requested_by].merge(Account.requested_by_map(@uncached_account_ids, @current_account_id))
     @endorsed        = cached[:endorsed].merge(Account.endorsed_map(@uncached_account_ids, @current_account_id))
     @account_note    = cached[:account_note].merge(Account.account_note_map(@uncached_account_ids, @current_account_id))
 

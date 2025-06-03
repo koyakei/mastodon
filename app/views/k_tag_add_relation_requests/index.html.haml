@@ -1,0 +1,18 @@
+%h1 Listing k_tag_add_relation_requests
+
+%table
+  %thead
+    %tr
+      %th
+      %th
+      %th
+
+  %tbody
+    - @k_tag_add_relation_requests.each do |k_tag_add_relation_request|
+      %tr
+        %td= link_to 'Show', k_tag_add_relation_request
+        %td= link_to 'Edit', edit_k_tag_add_relation_request_path(k_tag_add_relation_request)
+        %td= link_to 'Destroy', k_tag_add_relation_request, method: :delete
+%br
+
+= link_to 'New K tag add relation request', new_k_tag_add_relation_request_path

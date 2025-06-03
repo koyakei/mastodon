@@ -4,11 +4,13 @@ import { PureComponent } from 'react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
 import classnames from 'classnames';
-import { withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import { connect } from 'react-redux';
+import ReactTagAutocomplete from 'react-tag-autocomplete';
 
+import api, { getLinks } from '../api';
 import ChevronRightIcon from '@/material-icons/400-24px/chevron_right.svg?react';
 import { Icon }  from 'mastodon/components/icon';
 import { Poll } from 'mastodon/components/poll';
@@ -16,7 +18,12 @@ import { identityContextPropShape, withIdentity } from 'mastodon/identity_contex
 import { autoPlayGif, languages as preloadedLanguages } from 'mastodon/initial_state';
 
 const MAX_HEIGHT = 706; // 22px * 32 (+ 2px padding at the top)
-
+const TAG_STATES = {
+  LOADING: 'tag-LOADING',
+  ADDED: 'tag-ADDED',
+  ADD_REQUESTED: 'tag-ADD_REQUESTED',
+  DELETE_REQUESTED: 'tag-DELETE_REQUESTED'
+};
 /**
  *
  * @param {any} status
@@ -83,6 +90,147 @@ class StatusContent extends PureComponent {
     location: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired
   };
+
+  state = {
+    tags: this.props.status.get('k_tag_relations').map(it => ({
+      id: it.get('k_tag_id'),
+      name: it.get('k_tag').get('name'), state: TAG_STATES.ADDED, statusId: it.get('status_id'),
+    })), //this.props.status.k_tag_relation
+    suggestions: [],
+    tagStates: {},
+    loading: false,
+    error: null
+  };
+
+  fetchSuggestions = async (query) => {
+    this.setState({ loading: true, error: null });
+
+    try {
+      const response = await fetch(`/api/v2/search?q=${encodeURIComponent(query)}&type=k_tags`,);
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+      const data = await response.json();
+
+      this.setState({
+        suggestions: data.k_tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          state: TAG_STATES.LOADING,
+          description: tag.description,
+          isOwned: tag.is_owned
+        }))
+      });
+    } catch (error) {
+      console.error('検索エラー:', error);
+      this.setState({ error: 'サジェストの取得に失敗しました' });
+    } finally {
+      this.setState({ loading: false });
+    }
+  };
+addRelationRequest = (kTagId, statusId) => {
+    return api().post(`/api/v1/k_tag_add_relation_requests`, {
+      "k_tag_id": kTagId, "status_id": statusId
+    });
+  };
+
+  handleTagAddition = (tag) => {
+    try {
+      this.setState(prevState => ({
+        tags: [...prevState.tags, {
+          id: tag.id,
+          name: tag.name,
+          state: TAG_STATES.LOADING,
+          meta: {
+            description: tag.description,
+            isOwned: tag.isOwned
+          }
+        }]
+      }));
+
+      this.addRelationRequest(tag.id, this.props.status.get('id')).then( (response) => {
+        if ( !(response.status >= 200 && response.status < 300) &&!(response.status === 409)) throw new Error(`HTTP error! status: ${response.status}`);
+        this.setState(prevState => ({
+          tags: prevState.tags.map(t =>
+            t.id === tag.id ? { ...t, state: TAG_STATES.ADDED } : t
+          )
+        }));
+      }).catch((error) => {
+        console.error('タグ追加リクエスト失敗:', error);
+        this.setState(prevState => ({
+          tags: prevState.tags.map(t =>
+            t.id === tag.id ? { ...t, state: TAG_STATES.ADD_REQUESTED } : t
+          ),
+          error: 'タグの追加に失敗しました'
+        }));
+      });
+
+
+
+
+    } catch (error) {
+      console.error('検索エラー:', error);
+      this.setState({ error: 'サジェストの取得に失敗しました' });
+    } finally {
+      this.setState({ loading: false });
+    }
+  };
+
+
+  handleTagDeletion = (index) => {
+    // 1. 状態チェック（Mapであることを確認）
+    const { tags } = this.state;
+    const targetTag = tags.get(index);
+    api().post(`/api/v1/k_tag_delete_relation_requests`, {
+      "k_tag_id": targetTag.id, "status_id": targetTag.statusId
+    }).then( (response)　=> {
+      if (!(response.status >= 200 && response.status < 300) && !(response.status === 404)) {
+        throw new Error(`HTTPエラー! ステータス: ${response.status}`);
+      }
+      this.setState(prevState => ({ /// Cannot read properties of undefined (reading 'setState')
+        tags: prevState.tags.filter((_, i) => i !== index)
+      }));
+    }).catch((error) => {
+      console.error('削除リクエスト失敗:', error);
+      this.setState(prevState => ({
+        tags: prevState.tags.map(t =>
+          t.id === targetTag.id ? { ...t, state: TAG_STATES.REMOVE_REQUESTED } : t
+        ),
+        error: 'タグの削除に失敗しました'
+      }));
+    });
+  };
+
+  TagComponent({ tag, removeButtonText, onDelete }) {
+    return (
+      <button type='button' className={tag.state} title={`${tag.name}`} onClick={onDelete}>
+        {tag.name}
+      </button>
+    );
+  }
+  renderTagAutocomplete() {
+    const { tags, suggestions, loading, error } = this.state;
+
+    return (
+      <ReactTagAutocomplete
+        tags={tags}
+        suggestions={suggestions}
+        onAddition={this.handleTagAddition}
+        onDelete={this.handleTagDeletion}
+        onInput={this.fetchSuggestions}
+        labelText="タグを追加"
+        tagComponent={this.TagComponent}
+        noSuggestionsText={error || "該当するタグが見つかりません"}
+        loading={loading}
+        classNames={{
+          root: 'react-tags',
+          searchInput: 'search-input',
+          suggestions: 'suggestions-list',
+          suggestionActive: 'active-suggestion'
+        }}
+      />
+    );
+  }
 
   _updateStatusLinks () {
     const node = this.node;
@@ -252,6 +400,9 @@ class StatusContent extends PureComponent {
     if (this.props.onClick) {
       return (
         <>
+          <div>
+            {this.renderTagAutocomplete()}
+          </div>
           <div className={classNames} ref={this.setRef} tabIndex={0} onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp} key='status-content' onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
             <div className='status__content__text status__content__text--visible translate' lang={language} dangerouslySetInnerHTML={content} />
 
@@ -264,12 +415,14 @@ class StatusContent extends PureComponent {
       );
     } else {
       return (
-        <div className={classNames} ref={this.setRef} tabIndex={0} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <div className='status__content__text status__content__text--visible translate' lang={language} dangerouslySetInnerHTML={content} />
+        <><div>
+          {this.renderTagAutocomplete()}
+        </div><div className={classNames} ref={this.setRef} tabIndex={0} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
+            <div className='status__content__text status__content__text--visible translate' lang={language} dangerouslySetInnerHTML={content} />
 
-          {poll}
-          {translateButton}
-        </div>
+            {poll}
+            {translateButton}
+          </div></>
       );
     }
   }

@@ -16,6 +16,7 @@ class UpdateStatusService < BaseService
   # @option options [String] :spoiler_text
   # @option options [Boolean] :sensitive
   # @option options [String] :language
+  # @option options [String] :k_tag_add_relation_request
   def call(status, account_id, options = {})
     @status                    = status
     @options                   = options
@@ -35,7 +36,6 @@ class UpdateStatusService < BaseService
     reset_preview_card!
     update_metadata!
     broadcast_updates!
-
     @status
   rescue NoChangesSubmittedError
     # For calls that result in no changes, swallow the error
@@ -167,6 +167,6 @@ class UpdateStatusService < BaseService
   end
 
   def significant_changes?
-    @status.changed? || @poll_changed || @media_attachments_changed
+    @status.changed? || @poll_changed || @media_attachments_changed || @options.key?(:k_tag) || @options.key?(:k_tag_relations)
   end
 end

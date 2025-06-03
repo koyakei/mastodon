@@ -1122,6 +1122,8 @@ ja:
         title: トレンド投稿
       new_trending_tags:
         title: トレンドハッシュタグ
+      new_trending_k_tags:
+        title: トレンドタグ
       subject: "%{instance}で新しいトレンドが審査待ちです"
   aliases:
     add_new: エイリアスを作成

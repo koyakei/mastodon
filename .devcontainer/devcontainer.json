@@ -3,13 +3,15 @@
   "dockerComposeFile": "compose.yaml",
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-
   "features": {
     "ghcr.io/devcontainers/features/sshd:1": {}
   },
-
-  "forwardPorts": [3000, 4000],
-
+  "forwardPorts": [
+    3000,
+    4000,
+    1234,
+    9223
+  ],
   "portsAttributes": {
     "3000": {
       "label": "web",
@@ -20,23 +22,34 @@
       "label": "stream",
       "onAutoForward": "silent",
       "requireLocalPort": true
+    },
+    "1234": {
+      "label": "debug",
+      "onAutoForward": "silent"
+    },
+    "9223": {
+      "label": "Debugger",
+      "protocol": "tcp"
     }
   },
-
   "remoteUser": "root",
-
   "otherPortsAttributes": {
     "onAutoForward": "silent"
   },
-
   "onCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   "postCreateCommand": "bin/setup",
   "waitFor": "postCreateCommand",
-
   "customizations": {
     "vscode": {
       "settings": {},
-      "extensions": ["EditorConfig.EditorConfig", "webben.browserslist"]
+      "extensions": [
+        "EditorConfig.EditorConfig",
+        "webben.browserslist",
+        "KoichiSasada.vscode-rdbg",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next"
+      ]
     }
   }
 }

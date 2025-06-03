@@ -1,0 +1,79 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start_Sidekiq",
+      "type": "shell",
+      "command": "bundle exec sidekiq",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "promptOnClose": true
+    },
+    {
+      "label": "Build",
+      "dependsOn": [
+          // "Start_Sidekiq",
+          "StartMastodonStreaming",
+      ],
+      "dependsOrder": "parallel"
+  },
+  {
+    "type": "process",
+    "label": "Launch Webpack Dev Server",
+    "command": "${workspaceFolder}/bin/webpack-dev-server",
+    "args": ["--mode", "development"],
+    "isBackground": true,
+    "isBuildCommand": true,
+    "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": ".",
+          }
+        }]
+  },
+  {"label": "bindev",
+    "type": "shell",
+    "command": "bin/dev",
+    "isBackground": true,
+
+  }
+    ,
+  {
+    "label": "StartMastodonStreaming",
+    "type": "shell",
+    "command": "yarn",
+    "args": [
+      "workspace",
+      "@mastodon/streaming",
+      "start"
+    ],
+
+    "options": {
+      "env": {
+        "PORT": "4000"
+      }
+    },
+    "group": "none",
+    "presentation": {
+      "reveal": "always",
+      "panel": "new"
+    },
+    "problemMatcher": [],
+    "promptOnClose": true,
+  }
+  ]
+}

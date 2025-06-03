@@ -1,0 +1,57 @@
+{
+  // IntelliSense を使用して利用可能な属性を学べます。
+  // 既存の属性の説明をホバーして表示します。
+  // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug Mastodon Frontend",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/app/javascript",
+      "sourceMapPathOverrides": {
+        "webpack:///./*": "${webRoot}/*"
+      }
+    },
+    {
+      "name": "Debug Puma",
+      "type": "rdbg",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "script": "bin/puma",
+      "args": [
+      "-C",
+      "config/puma.rb",
+      "-b",
+      "tcp://0.0.0.0:3000"
+      ],
+      "env": {
+      "RAILS_ENV": "development"
+      },
+      "useBundler": true
+    },
+    {
+      "name": "Debug Rails",
+      "type": "rdbg",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "script": "bin/rails server",
+      "args": [
+        "-b 0.0.0.0"
+      ],
+      "useBundler": true
+    },
+  ],
+  "compounds": [
+    {
+      "name": "Server/Client",
+      "configurations": [
+        "Debug Rails",
+      ],
+      // "preLaunchTask": "Build",
+      "stopAll": true,
+    }
+  ],
+}

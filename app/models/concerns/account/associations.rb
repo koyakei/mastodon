@@ -47,6 +47,14 @@ module Account::Associations
       end
     end
 
+    has_many :k_tags, inverse_of: :account, dependent: :destroy, through: :k_tag_relations
+    has_many :own_k_tag_relations, inverse_of: :account, dependent: :destroy, class_name: 'KTagRelations'
+
+    # フォローしているKtag関連ツイート
+    has_many :k_tags, through: :follow_k_tags
+    has_many :k_tag_relations, through: :k_tags
+    has_many :followingby_k_tag_statuses, through: :k_tag_relations, source: :k_tag
+
     # Status records pinned by the account
     has_many :pinned_statuses, -> { reorder(status_pins: { created_at: :desc }) }, through: :status_pins, class_name: 'Status', source: :status
 

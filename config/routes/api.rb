@@ -6,6 +6,21 @@ namespace :api, format: false do
 
   # JSON / REST API
   namespace :v1 do
+
+    resources :k_tag_relations, only: [:index, :create, :show, :destroy]
+    resources :k_tag_add_relation_requests , only: [:index, :create, :show]do
+      member do
+        post :approve
+        post :deny
+      end
+    end
+
+    resources :k_tag_delete_relation_requests, only: [:index, :create, :show] do
+      member do
+        post :approve
+        post :deny
+      end
+    end
     resources :statuses, only: [:index, :create, :show, :update, :destroy] do
       scope module: :statuses do
         resources :reblogged_by, controller: :reblogged_by_accounts, only: :index
@@ -41,6 +56,7 @@ namespace :api, format: false do
       resource :public, only: :show, controller: :public
       resource :link, only: :show, controller: :link
       resources :tag, only: :show
+      resources :k_tag, only: :show
       resources :list, only: :show
     end
 
@@ -212,6 +228,13 @@ namespace :api, format: false do
       end
     end
 
+    resources :k_tags, only: [:show] do
+      member do
+        post :follow
+        post :unfollow
+      end
+    end
+
     resources :tags, only: [:show] do
       member do
         post :follow
@@ -223,6 +246,7 @@ namespace :api, format: false do
 
     resources :followed_tags, only: [:index]
 
+    resources :followed_k_tags, only: [:index, :create, :show, :destroy]
     resources :lists, only: [:index, :create, :show, :update, :destroy] do
       resource :accounts, only: [:show, :create, :destroy], module: :lists
     end

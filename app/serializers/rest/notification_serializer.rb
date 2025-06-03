@@ -11,6 +11,34 @@ class REST::NotificationSerializer < ActiveModel::Serializer
   belongs_to :report, if: :report_type?, serializer: REST::ReportSerializer
   belongs_to :account_relationship_severance_event, key: :event, if: :relationship_severance_event?, serializer: REST::AccountRelationshipSeveranceEventSerializer
   belongs_to :account_warning, key: :moderation_warning, if: :moderation_warning_event?, serializer: REST::AccountWarningSerializer
+  belongs_to :k_tag_add_relation_request, if: :k_tag_add_relation_request_type?, serializer: REST::KTagAddRelationRequestForUserSerializer
+  belongs_to :k_tag_delete_relation_request, if: :k_tag_delete_relation_request_type?, serializer: REST::KTagDeleteRelationRequestSerializer
+
+  has_one :status, if: :k_tag_request?, serializer: REST::StatusSerializer
+
+  def k_tag_request?
+    k_tag_add_type? || k_tag_delete_type?
+  end
+
+  def k_tag_add_type?
+    !status_type? && k_tag_add_relation_request_type?
+  end
+
+  def k_tag_delete_type?
+    !status_type? && k_tag_delete_relation_request_type?
+  end
+
+  def status
+    if k_tag_add_relation_request_type?
+      return object&.k_tag_add_relation_request.status
+    elsif k_tag_delete_relation_request_type?
+      return del = object&.k_tag_delete_relation_request.status
+    end
+  end
+
+  def delete_status
+    object.k_tag_delete_relation_request.status
+  end
 
   def id
     object.id.to_s
@@ -22,6 +50,14 @@ class REST::NotificationSerializer < ActiveModel::Serializer
 
   def status_type?
     [:favourite, :reblog, :status, :mention, :poll, :update].include?(object.type)
+  end
+
+  def k_tag_add_relation_request_type?
+    (object.type.to_s).start_with?("k_tag_add_relation_request")
+  end
+
+  def k_tag_delete_relation_request_type?
+    [:k_tag_delete].include?(object.type)
   end
 
   def report_type?
