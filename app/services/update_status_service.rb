@@ -167,6 +167,7 @@ class UpdateStatusService < BaseService
   end
 
   def significant_changes?
-    @status.changed? || @poll_changed || @media_attachments_changed || @options.key?(:k_tag) || @options.key?(:k_tag_relations)
+    @status.changed? || @poll_changed || @media_attachments_changed ||
+    @options.key?(:k_tag_add_relation_request) || @options.key?(:k_tag) || @options.key?(:k_tag_relations)
   end
 end

@@ -22,6 +22,7 @@ class KTag < ApplicationRecord
   validates :followers_count, presence: true, numericality: {only_integer: true, greater_than_or_equal_to: 0}
   scope :matches_name, ->(term) { where(arel_table[:name].lower.matches(arel_table.lower("#{sanitize_sql_like(KTag.normalize(term))}%"), nil, true)) } # Search with case-sensitive to use B-tree index
   update_index('k_tags', :self)
+  update_index('statuses#k_tags', :statuses)
   has_many :k_tag_delete_relation_requests
 
   def increment_follower_count!
@@ -51,7 +52,7 @@ class KTag < ApplicationRecord
         where(arel_table[:name].lower.in(names))
       end
     end
-    
+
     def find_or_create_by_names(name_or_names)
       names = Array(name_or_names).map { |str| [normalize(str), str] }.uniq(&:first)
 

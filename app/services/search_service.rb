@@ -58,7 +58,8 @@ class SearchService < BaseService
       offset: @offset,
       account_id: @options[:account_id],
       min_id: @options[:min_id],
-      max_id: @options[:max_id]
+      max_id: @options[:max_id],
+      k_tag_ids: @options[:k_tag_ids]
     )
   end
 

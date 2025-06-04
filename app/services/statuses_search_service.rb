@@ -25,6 +25,13 @@ class StatusesSearchService < BaseService
 
   def status_search_results
     request = parsed_query.request
+    if @options[:k_tag_ids].present?
+      nested_queries = @options[:k_tag_ids].map do |id|
+        { "term": { "k_tags": id } }
+      end
+      request = request.query(bool: { must: nested_queries })
+    end
+
     results             = request.collapse(field: :id).order(id: { order: :desc }).limit(@limit).offset(@offset).objects.compact
     account_ids         = results.map(&:account_id)
     account_domains     = results.map(&:account_domain)
