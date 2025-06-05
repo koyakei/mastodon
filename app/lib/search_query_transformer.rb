@@ -10,6 +10,7 @@ class SearchQueryTransformer < Parslet::Transform
     after
     during
     in
+    ktagid
   ).freeze
 
   class Query
@@ -181,6 +182,10 @@ class SearchQueryTransformer < Parslet::Transform
       when 'in'
         @operator = :flag
         @term = term
+      when 'ktagid'
+        @filter = :k_tags
+        @type = :term
+        @term = term.to_i
       else
         raise "Unknown prefix: #{prefix}"
       end

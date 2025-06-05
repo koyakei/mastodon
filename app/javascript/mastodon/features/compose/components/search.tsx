@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react';
+import React,{ useCallback, useState, useRef } from 'react';
 
 import {
   defineMessages,
@@ -11,6 +11,8 @@ import classNames from 'classnames';
 import { useHistory } from 'react-router-dom';
 
 import { isFulfilled } from '@reduxjs/toolkit';
+
+import ReactTagAutocomplete from 'react-tag-autocomplete'
 
 import CancelIcon from '@/material-icons/400-24px/cancel-fill.svg?react';
 import CloseIcon from '@/material-icons/400-24px/close.svg?react';
@@ -451,8 +453,55 @@ export const Search: React.FC<{
     setSelectedOption(-1);
   }, [setExpanded, setSelectedOption]);
 
+
+  const [selected, setSelected] = useState([
+  ]);
+  // const [value, setValue] = useState('')
+  const [suggestions, setSuggestions] = useState([
+  ])
+
+
+  const onAdd = useCallback(
+    (newTag) => {
+      setSelected([...selected, newTag])
+      insertText('ktagid:' + newTag.id)
+    },
+    [selected]
+  )
+
+  const onDelete = useCallback(
+    (tagIndex: number) => {
+      setSelected(selected.filter((_, i) => i !== tagIndex))
+    },
+    [selected]
+  )
+
+  const fetchSuggestions = useCallback(
+    async (query) => {
+      try {
+        const response = await fetch(`/api/v2/search?q=${encodeURIComponent(query)}&type=k_tags`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setSuggestions(data.k_tags);
+      } catch (error) {
+        console.error('検索エラー:', error);
+        setError('サジェストの取得に失敗しました');
+      }
+    },
+    [] // 依存配列は必要に応じて追加してください
+  );
+
   return (
     <form className={classNames('search', { active: expanded })}>
+      <ReactTagAutocomplete
+        labelText="Select countries"
+        tags={selected}
+        suggestions={suggestions}
+        onAddition={onAdd}
+        onDelete={onDelete}
+        onInput={fetchSuggestions}
+        noOptionsText="No matching countries" />
+
       <input
         ref={searchInputRef}
         className='search__input'
