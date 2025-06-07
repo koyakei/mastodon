@@ -28,7 +28,6 @@ class KTagAddRelationRequest < ApplicationRecord
   validate :unique_not_reviewed_request
 
   def unique_not_reviewed_request
-    Rails.logger.debug("#{KTagAddRelationRequest.all.count}  unique_not_reviewed_request called for k_tag_id: #{k_tag_id}, requester_id: #{requester_id}, status_id: #{status_id}, request_status: #{request_status}")
     if request_status == "not_reviewed" && self.class.where(k_tag_id: k_tag_id, requester_id: requester_id, status_id: status_id, request_status: "not_reviewed").exists?
       errors.add(:base, "A not_reviewed request with the same k_tag_id, requester_id, and status_id already exists.")
     end
