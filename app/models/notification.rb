@@ -227,9 +227,9 @@ class Notification < ApplicationRecord
     when 'KTagRelation'
       self.from_account_id = activity&.k_tag_relation&.account_id
     when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく
-      self.from_account_id = activity&.k_tag_add_relation_request&.requester&.id
+      self.from_account_id = activity&.requester&.id
     when 'KTagDeleteRelationRequest'
-      self.from_account_id = activity&.k_tag_delete_relation_request&.requester&.id
+      self.from_account_id = activity&.requester&.id
     when 'AccountRelationshipSeveranceEvent', 'AccountWarning', 'GeneratedAnnualReport'
 
       # These do not really have an originating account, but this is mandatory
