@@ -4,7 +4,7 @@ import type { AccountWarningAction } from 'mastodon/models/notification_group';
 
 import type { ApiAccountJSON } from './accounts';
 import type { ApiReportJSON } from './reports';
-import type { ApiStatusJSON } from './statuses';
+import type { ApiStatusJSON , ApiKTagAddRelationRequestJSON, ApiKTagDeleteRelationRequestJSON } from './statuses';
 
 // See app/model/notification.rb
 export const allNotificationTypes = [
@@ -21,6 +21,12 @@ export const allNotificationTypes = [
   'moderation_warning',
   'severed_relationships',
   'annual_report',
+  'k_tag_add_relation_request',
+  'k_tag_delete_relation_request',
+  'k_tag_delete_relation_request_denied',
+  'k_tag_add_relation_request_denied',
+  'k_tag_delete_relation_request_approved',
+  'k_tag_add_relation_request_approved',
 ];
 
 export type NotificationWithStatusType =
@@ -29,7 +35,9 @@ export type NotificationWithStatusType =
   | 'status'
   | 'mention'
   | 'poll'
-  | 'update';
+  | 'update'
+  | NotificationKTagAddRelationRequestNotificationType
+  | NotificationKTagDeleteRelationRequestNotificationType;
 
 export type NotificationType =
   | NotificationWithStatusType
@@ -40,6 +48,12 @@ export type NotificationType =
   | 'admin.sign_up'
   | 'admin.report'
   | 'annual_report';
+
+export type NotificationKTagAddRelationRequestNotificationType =
+  | 'k_tag_add_relation_request';
+
+export type NotificationKTagDeleteRelationRequestNotificationType =
+  | 'k_tag_delete_relation_request';
 
 export interface BaseNotificationJSON {
   id: string;
@@ -68,6 +82,18 @@ interface NotificationGroupWithStatusJSON extends BaseNotificationGroupJSON {
 interface NotificationWithStatusJSON extends BaseNotificationJSON {
   type: NotificationWithStatusType;
   status: ApiStatusJSON | null;
+}
+
+interface KTagAddRelationRequestNotificationJSON
+  extends BaseNotificationJSON {
+  type: NotificationKTagAddRelationRequestNotificationType;
+  k_tag_add_relation_request: ApiKTagAddRelationRequestJSON;
+}
+
+interface KTagDeleteRelationRequestNotificationJSON
+  extends BaseNotificationJSON {
+  type: NotificationKTagDeleteRelationRequestNotificationType;
+  k_tag_delete_relation_request: ApiKTagDeleteRelationRequestJSON;
 }
 
 interface ReportNotificationGroupJSON extends BaseNotificationGroupJSON {
@@ -146,7 +172,9 @@ export type ApiNotificationJSON =
   | ReportNotificationJSON
   | AccountRelationshipSeveranceNotificationJSON
   | NotificationWithStatusJSON
-  | ModerationWarningNotificationJSON;
+  | ModerationWarningNotificationJSON
+  | KTagAddRelationRequestNotificationJSON
+  | KTagDeleteRelationRequestNotificationJSON;
 
 export type ApiNotificationGroupJSON =
   | SimpleNotificationGroupJSON

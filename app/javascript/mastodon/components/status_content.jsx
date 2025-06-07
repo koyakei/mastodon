@@ -128,7 +128,7 @@ class StatusContent extends PureComponent {
       this.setState({ loading: false });
     }
   };
-addRelationRequest = (kTagId, statusId) => {
+  addRelationRequest = (kTagId, statusId) => {
     return api().post(`/api/v1/k_tag_add_relation_requests`, {
       "k_tag_id": kTagId, "status_id": statusId
     });
@@ -149,25 +149,33 @@ addRelationRequest = (kTagId, statusId) => {
       }));
 
       this.addRelationRequest(tag.id, this.props.status.get('id')).then( (response) => {
-        if ( !(response.status >= 200 && response.status < 300) &&!(response.status === 409)) throw new Error(`HTTP error! status: ${response.status}`);
-        this.setState(prevState => ({
-          tags: prevState.tags.map(t =>
-            t.id === tag.id ? { ...t, state: TAG_STATES.ADDED } : t
-          )
-        }));
+        if ( !(response.status >= 200 && response.status < 300) && !(response.status === 409) && !(response.status === 202)) throw new Error(`HTTP error! status: ${response.status}`);
+        // タグの追加リクエストが成功した場合、ADD_REQUESTED状態に更新
+        if (response.status === 202) {
+          this.setState(prevState => ({
+            tags: prevState.tags.map(t =>
+              t.id === tag.id ? { ...t, state: TAG_STATES.ADD_REQUESTED } : t
+            )
+          }));
+        } else if (response.status === 200) {
+          this.setState(prevState => ({
+            tags: prevState.tags.map(t =>
+              t.id === tag.id ? { ...t, state: TAG_STATES.ADDED } : t
+            )
+          }));
+        }
       }).catch((error) => {
-        console.error('タグ追加リクエスト失敗:', error);
-        this.setState(prevState => ({
-          tags: prevState.tags.map(t =>
-            t.id === tag.id ? { ...t, state: TAG_STATES.ADD_REQUESTED } : t
-          ),
-          error: 'タグの追加に失敗しました'
-        }));
+        // 409 Conflictの場合は、すでに追加されているため、ADDED状態にする
+        if (error.response && error.response.status === 409) {
+          console.error('タグ追加リクエスト失敗:', error);
+          this.setState(prevState => ({
+            tags: prevState.tags.map(t =>
+              t.id === tag.id ? { ...t, state: TAG_STATES.ADDED } : t
+            ),
+            error: 'タグの追加に失敗しました'
+          }));
+        }
       });
-
-
-
-
     } catch (error) {
       console.error('検索エラー:', error);
       this.setState({ error: 'サジェストの取得に失敗しました' });
@@ -183,21 +191,21 @@ addRelationRequest = (kTagId, statusId) => {
     const targetTag = tags.get(index);
     api().post(`/api/v1/k_tag_delete_relation_requests`, {
       "k_tag_id": targetTag.id, "status_id": targetTag.statusId
-    }).then( (response)　=> {
+    }).then( (response) => {
+      if (response.status === 202) { // タグの削除リクエストが成功した場合、DELETE_REQUESTED状態に更新
+        this.setState(prevState => ({
+          tags: prevState.tags.map(t =>
+            t.id === targetTag.id ? { ...t, state: TAG_STATES.DELETE_REQUESTED } : t
+          )
+        }));
+      } else if (response.status === 200) { // タグの削除リクエストが成功した場合、タグを削除 自分の場合
+        this.setState(prevState => ({
+          tags: prevState.tags.filter((_, i) => i !== index)
+        }));
+      }
       if (!(response.status >= 200 && response.status < 300) && !(response.status === 404)) {
         throw new Error(`HTTPエラー! ステータス: ${response.status}`);
       }
-      this.setState(prevState => ({ /// Cannot read properties of undefined (reading 'setState')
-        tags: prevState.tags.filter((_, i) => i !== index)
-      }));
-    }).catch((error) => {
-      console.error('削除リクエスト失敗:', error);
-      this.setState(prevState => ({
-        tags: prevState.tags.map(t =>
-          t.id === targetTag.id ? { ...t, state: TAG_STATES.REMOVE_REQUESTED } : t
-        ),
-        error: 'タグの削除に失敗しました'
-      }));
     });
   };
 

@@ -58,13 +58,12 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
           k_tag_add_relation_request.save!
           LocalNotificationWorker.new.perform(k_tag_add_relation_request.k_tag.account_id,
           k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
-          DistributionWorker.perform_async(k_tag_add_relation_request.status.id)
           render json: k_tag_add_relation_request.status, serializer: REST::StatusSerializer
         rescue ActiveRecord::RecordInvalid => e
           render json: { errors: k_tag_add_relation_request.errors.full_messages }, status: :internal_server_error
         end
       else
-        render json: { errors: k_tag_add_relation_request.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: "すでにリクエストしているよ #{k_tag_add_relation_request.errors.full_messages}" }, status: :unprocessable_entity
       end
     end
   end

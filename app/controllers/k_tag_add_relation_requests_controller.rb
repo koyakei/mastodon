@@ -23,6 +23,7 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
     ))
 
     if current_user.account.id == KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
+      Rails.logger.info "dddddKTagAddRelationRequest: #{k_tag_add_relation_request.inspect}"
       k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id], status_id: api_v1_k_tag_add_relation_request_params[:status_id])
       begin
         if k_tag_relation.save
@@ -41,11 +42,11 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
             k_tag_relation.errors.any? { |e| e.type == :taken }
             render json: { error: 'tag relation already exists' }, status: :conflict
           else
-            render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
+            render json: { errors: "自分のものだけどうまくいかない" + k_tag_relation.errors.full_messages }, status: :unprocessable_entity
           end
         end
       rescue ActiveRecord::RecordInvalid => e
-        render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: "リクエスト済み" + k_tag_relation.errors.full_messages }, status: :unprocessable_entity
       end
     else
       if k_tag_add_relation_request.valid?
@@ -54,17 +55,18 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
             current_user.account.id,
             k_tag_add_relation_request: k_tag_add_relation_request
           )
+          Rails.logger.info "KTagAddRelationRequest: #{k_tag_add_relation_request.inspect}"
         begin
           k_tag_add_relation_request.save!
           LocalNotificationWorker.new.perform(k_tag_add_relation_request.k_tag.account_id,
           k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
           DistributionWorker.perform_async(k_tag_add_relation_request.status.id)
-          render json: k_tag_add_relation_request.status, serializer: REST::StatusSerializer
+          render json: k_tag_add_relation_request.status, serializer: REST::StatusSerializer, status: :accepted
         rescue ActiveRecord::RecordInvalid => e
-          render json: { errors: k_tag_add_relation_request.errors.full_messages }, status: :internal_server_error
+          render json: { errors: "なんだか保存できない" }, status: :internal_server_error
         end
       else
-        render json: { errors: k_tag_add_relation_request.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: "リクエスト済み" + k_tag_add_relation_request.errors.full_messages }, status: :unprocessable_entity
       end
     end
   end

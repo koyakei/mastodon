@@ -46,16 +46,18 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
     else
       # 他人の所有しているタグだった場合リクエストを送る　通知
       api_v1_k_tag_delete_relation_request = KTagDeleteRelationRequest.new(api_v1_k_tag_delete_relation_request_params.merge(requester_id: current_user.account_id ))
-      if api_v1_k_tag_delete_relation_request.save
+      if api_v1_k_tag_delete_relation_request.save #　すでに削除されている場合と、すでに削除リクエストがされている場合をわけてレスポンスしたい
         UpdateStatusService.new.call(
           k_tag_relation.status,
           current_user.account_id,
           k_tag: true
         )
         LocalNotificationWorker.perform_async(k_tag_relation&.account_id, api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest','k_tag_delete_relation_request')
-        render json: k_tag_relation.status, status: :ok, serializer: REST::StatusSerializer
-      else
+        render json: k_tag_relation.status, status: :ok, serializer: REST::StatusSerializer, status: :accepted
+      elsif api_v1_k_tag_delete_relation_request.errors.of_kind?(:k_tag_relation_id, :taken)
         render json: { errors: api_v1_k_tag_delete_relation_request.errors.full_messages }, status: :conflict
+      else
+        render json: { errors: api_v1_k_tag_delete_relation_request.errors.full_messages }, status: :unprocessable_entity
       end
     end
   end

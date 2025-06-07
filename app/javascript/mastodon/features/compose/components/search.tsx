@@ -44,7 +44,7 @@ const labelForRecentSearch = (search: RecentSearch) => {
     case 'hashtag':
       return `#${search.q}`;
     default:
-      return search.q;
+      return `${search.q} +${search.k_tag_ids }`;
   }
 };
 
@@ -78,6 +78,22 @@ export const Search: React.FC<{
 
   if (searchEnabled) {
     searchOptions.push(
+      {
+        key: 'prompt-k-tag',
+        label: (
+          <>
+            <mark>ktagid:</mark>{' '}
+            <FormattedList
+              type='disjunction'
+              value={['ktagid:']}
+            />
+          </>
+        ),
+        action: (e) => {
+          e.preventDefault();
+          insertText('ktagid:');
+        },
+      },
       {
         key: 'prompt-has',
         label: (
@@ -216,6 +232,11 @@ export const Search: React.FC<{
       } else {
         const queryParams = new URLSearchParams({ q: search.q });
         if (search.type) queryParams.set('type', search.type);
+        if (search.k_tag_ids) {
+          search.k_tag_ids.forEach((id) => {
+            queryParams.append("k_tag_ids", id.toString());
+          });
+        }
         history.push({ pathname: '/search', search: queryParams.toString() });
       }
 
@@ -244,10 +265,15 @@ export const Search: React.FC<{
   };
 
   const submit = useCallback(
-    (q: string, type?: SearchType) => {
-      void dispatch(clickSearchResult({ q, type }));
+    (q: string, type?: SearchType, k_tag_ids?: [number]) => {
+      void dispatch(clickSearchResult({ q, type, k_tag_ids }));
       const queryParams = new URLSearchParams({ q });
       if (type) queryParams.set('type', type);
+      if (k_tag_ids) {
+        k_tag_ids.forEach((id) => {
+          queryParams.append("k_tag_ids", id.toString);
+        });
+      }
       history.push({ pathname: '/search', search: queryParams.toString() });
       unfocus();
     },
@@ -309,7 +335,7 @@ export const Search: React.FC<{
             action: () => {
               const query = trimmedValue.replace(/^#/, '');
               history.push(`/tags/${query}`);
-              void dispatch(clickSearchResult({ q: query, type: 'hashtag' }));
+              void dispatch(clickSearchResult({ q: query, type: 'statuses', k_tag_ids: [query] }));
               unfocus();
             },
           });

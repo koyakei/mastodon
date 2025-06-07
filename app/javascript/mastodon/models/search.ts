@@ -6,6 +6,7 @@ export type SearchType = 'account' | 'hashtag' | 'accounts' | 'statuses';
 export interface RecentSearch {
   q: string;
   type?: SearchType;
+  k_tag_ids?: [number];
 }
 
 export interface SearchResults {

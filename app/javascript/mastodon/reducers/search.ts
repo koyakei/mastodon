@@ -16,6 +16,7 @@ interface State {
   type?: ApiSearchType;
   loading: boolean;
   results?: SearchResults;
+  k_tag_ids: number[];
 }
 
 const initialState: State = {
@@ -24,6 +25,7 @@ const initialState: State = {
   type: undefined,
   loading: false,
   results: undefined,
+  k_tag_ids: [],
 };
 
 export const searchReducer = createReducer(initialState, (builder) => {
@@ -32,6 +34,7 @@ export const searchReducer = createReducer(initialState, (builder) => {
     state.type = action.meta.arg.type;
     state.results = createSearchResults(action.payload);
     state.loading = false;
+    state.k_tag_ids = action.meta.arg.k_tag_ids ?? [];
   });
 
   builder.addCase(expandSearch.fulfilled, (state, action) => {

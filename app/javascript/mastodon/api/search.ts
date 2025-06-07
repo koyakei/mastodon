@@ -10,6 +10,7 @@ export const apiGetSearch = (params: {
   type?: ApiSearchType;
   limit?: number;
   offset?: number;
+  kTagIds?: [number];
 }) =>
   apiRequestGet<ApiSearchResultsJSON>('v2/search', {
     ...params,

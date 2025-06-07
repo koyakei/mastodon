@@ -82,16 +82,16 @@ class Notification < ApplicationRecord
     k_tag_delete_relation_request: {
       filterable: true,
     }.freeze,
-    k_tag_denied_delete_relation_request: {
+    k_tag_delete_relation_request_denied: {
       filterable: true,
     }.freeze,
-    k_tag_denied_add_relation_request: {
+    k_tag_add_relation_request_denied: {
       filterable: true,
     }.freeze,
-    k_tag_approved_delete_relation_request: {
+    k_tag_delete_relation_request_approved: {
       filterable: true,
     }.freeze,
-    k_tag_approved_add_relation_request: {
+    k_tag_add_relation_request_approved: {
       filterable: true,
     }.freeze,
   }.freeze

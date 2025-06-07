@@ -11083,3 +11083,20 @@ noscript {
     }
   }
 }
+.tag-LOADING {
+  background: #96a553;
+}
+
+.tag-ADDED {
+  border-left: 4px solid #28a745;
+  background: #08a13b;
+}
+
+.tag-ADD_REQUESTED {
+  border: 2px dashed #0772ff;
+  background: #2c42e9;
+}
+
+.tag-DELETE_REQUESTED {
+  background: #2c42e9;
+}

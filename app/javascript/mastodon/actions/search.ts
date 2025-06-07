@@ -19,7 +19,7 @@ export const SEARCH_HISTORY_UPDATE = 'SEARCH_HISTORY_UPDATE';
 
 export const submitSearch = createDataLoadingThunk(
   'search/submit',
-  async ({ q, type }: { q: string; type?: ApiSearchType }, { getState }) => {
+  async ({ q, type ,kTagIds }: { q: string; type?: ApiSearchType, kTagIds?: [number] }, { getState }) => {
     const signedIn = !!getState().meta.get('me');
 
     return apiGetSearch({
@@ -27,6 +27,7 @@ export const submitSearch = createDataLoadingThunk(
       type,
       resolve: signedIn,
       limit: 11,
+      kTagIds: kTagIds,
     });
   },
   (data, { dispatch }) => {
@@ -102,7 +103,7 @@ export const openURL = createDataLoadingThunk(
 export const clickSearchResult = createAppAsyncThunk(
   'search/clickResult',
   (
-    { q, type }: { q: string; type?: RecentSearchType },
+    { q, type ,k_tag_ids}: { q: string; type?: RecentSearchType, k_tag_ids?: [number] },
     { dispatch, getState },
   ) => {
     const previous = getState().search.recent;
@@ -112,7 +113,7 @@ export const clickSearchResult = createAppAsyncThunk(
     }
 
     const me = getState().meta.get('me') as string;
-    const current = [{ type, q }, ...previous].slice(0, 4);
+    const current = [{ type, q, k_tag_ids }, ...previous].slice(0, 4);
 
     searchHistory.set(me, current);
     dispatch(updateSearchHistory(current));

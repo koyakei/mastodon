@@ -25,6 +25,7 @@ class KTagDeleteRelationRequest < ApplicationRecord
     denied: 2
   }
   attribute :request_status, :integer
+  #　すでに削除されている場合と、すでに削除リクエストがされている場合をわけてレスポンスしたい
   def reviewed?
     !self.not_reviewed?
   end

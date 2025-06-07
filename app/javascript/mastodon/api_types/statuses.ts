@@ -120,6 +120,28 @@ export interface ApiStatusJSON {
   poll?: ApiPollJSON;
 }
 
+export interface ApiKTagAddRelationRequestJSON
+{
+  k_tag: ApiKTagJSON;
+  status: ApiStatusJSON;
+  requester: ApiAccountJSON;
+  request_status: number; // 0: pending, 1: accepted, 2: rejected
+}
+
+export interface ApiKTagDeleteRelationRequestJSON
+{
+  k_tag: ApiKTagJSON;
+  status: ApiStatusJSON;
+  requester: ApiAccountJSON;
+  request_status: number; // 0: pending, 1: accepted, 2: rejected
+}
+
+export interface ApiKTagJSON {
+  id: number;
+  name: string;
+  description: string;
+}
+
 export interface ApiContextJSON {
   ancestors: ApiStatusJSON[];
   descendants: ApiStatusJSON[];

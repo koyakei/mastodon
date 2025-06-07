@@ -13,6 +13,7 @@ import { NotificationAnnualReport } from './notification_annual_report';
 import { NotificationFavourite } from './notification_favourite';
 import { NotificationFollow } from './notification_follow';
 import { NotificationFollowRequest } from './notification_follow_request';
+import { NotificationKTagAddRelationRequest } from './notification_k_tag_add_relation_request';
 import { NotificationMention } from './notification_mention';
 import { NotificationModerationWarning } from './notification_moderation_warning';
 import { NotificationPoll } from './notification_poll';
@@ -92,6 +93,14 @@ export const NotificationGroup: React.FC<{
         <NotificationMention unread={unread} notification={notificationGroup} />
       );
       break;
+    // case 'k_tag_add_request':
+    //   content = (
+    //     <NotificationKTagAddRelationRequest
+    //       unread={unread}
+    //       notification={notificationGroup}
+    //     />
+    //   );
+    //   break;
     case 'follow':
       content = (
         <NotificationFollow unread={unread} notification={notificationGroup} />

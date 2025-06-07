@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { useIntl, defineMessages, FormattedMessage } from 'react-intl';
 
@@ -69,10 +70,12 @@ const typeFromParam = (param?: string): SearchType => {
 export const SearchResults: React.FC<{ multiColumn: boolean }> = ({
   multiColumn,
 }) => {
+  const { search } = useLocation();
   const columnRef = useRef<ColumnRef>(null);
   const intl = useIntl();
   const [q] = useSearchParam('q');
   const [type, setType] = useSearchParam('type');
+  const kTagIds = new URLSearchParams(search).getAll('kTagIds[]');
   const isLoading = useAppSelector((state) => state.search.loading);
   const results = useAppSelector((state) => state.search.results);
   const dispatch = useAppDispatch();
@@ -85,6 +88,7 @@ export const SearchResults: React.FC<{ multiColumn: boolean }> = ({
         submitSearch({
           q: trimmedValue,
           type: mappedType === 'all' ? undefined : mappedType,
+          kTagIds: kTagIds.length > 0 ? kTagIds.map(Number) : undefined,
         }),
       );
     }
