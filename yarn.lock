@@ -2562,7 +2562,7 @@ __metadata:
     react-select: "npm:^5.7.3"
     react-sparklines: "npm:^1.7.0"
     react-swipeable-views: "npm:^0.14.0"
-    react-tag-autocomplete: "npm:^7.5.0"
+    react-tag-autocomplete: "npm:^6.3.0"
     react-test-renderer: "npm:^18.2.0"
     react-textarea-autosize: "npm:^8.4.1"
     react-toggle: "npm:^4.1.3"
@@ -10223,12 +10223,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-tag-autocomplete@npm:^7.5.0":
-  version: 7.5.0
-  resolution: "react-tag-autocomplete@npm:7.5.0"
+"react-tag-autocomplete@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "react-tag-autocomplete@npm:6.3.0"
   peerDependencies:
-    react: ^18.0.0 || ^19.0.0
-  checksum: 10c0/1772c53c5eef24793a65d7db6decad0ba6b7cfe8facf8f9d46d352f9db68a4923de1472724c631672c232fed81327bea4dba22de3cce79ddb2b335975ec20e7e
+    prop-types: ^15.5.0
+    react: ^16.5.0 || ^17.0.0
+    react-dom: ^16.5.0 || ^17.0.0
+  checksum: 10c0/6e7ebd3225d0a8fec5c232656d51124c33067a352e0ff7ae952913c3fc7c9f0148f99d292d109eba697ca271bc4a6b78be60dbd76e717a0bd15a48c98bad9207
   languageName: node
   linkType: hard
 
