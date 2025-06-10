@@ -44,6 +44,7 @@ export const NotificationKTagAddRelationRequest: React.FC<{
 
         <div>
           <div>
+            {kTagAddRelationRequest.k_tag.name}
             <div className='account__avatar-wrapper'>
                         <Avatar withLink account={kTagAddRelationRequest.requester as Account} size={36} />
                       </div>
