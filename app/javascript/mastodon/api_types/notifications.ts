@@ -3,8 +3,9 @@
 import type { AccountWarningAction } from 'mastodon/models/notification_group';
 
 import type { ApiAccountJSON } from './accounts';
+import type { ApiKTagAddRelationRequestJSON, ApiKTagDeleteRelatonRequestJSON } from './k_tags';
 import type { ApiReportJSON } from './reports';
-import type { ApiStatusJSON , ApiKTagAddRelationRequestJSON, ApiKTagDeleteRelationRequestJSON } from './statuses';
+import type { ApiStatusJSON } from './statuses';
 
 // See app/model/notification.rb
 export const allNotificationTypes = [
@@ -87,13 +88,13 @@ interface NotificationWithStatusJSON extends BaseNotificationJSON {
 interface KTagAddRelationRequestNotificationJSON
   extends BaseNotificationJSON {
   type: NotificationKTagAddRelationRequestNotificationType;
-  k_tag_add_relation_request: ApiKTagAddRelationRequestJSON;
+  k_tag_delete_relation_request: ApiKTagAddRelationRequestJSON[];
 }
 
 interface KTagDeleteRelationRequestNotificationJSON
   extends BaseNotificationJSON {
   type: NotificationKTagDeleteRelationRequestNotificationType;
-  k_tag_delete_relation_request: ApiKTagDeleteRelationRequestJSON;
+  k_tag_delete_relation_request: ApiKTagDeleteRelatonRequestJSON;
 }
 
 interface ReportNotificationGroupJSON extends BaseNotificationGroupJSON {

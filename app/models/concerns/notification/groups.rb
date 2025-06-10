@@ -15,7 +15,7 @@ module Notification::Groups
     return if filtered? || GROUPABLE_NOTIFICATION_TYPES.exclude?(type)
 
     type_prefix = case type
-                  when :favourite, :reblog
+                  when :favourite, :reblog, :k_tag_add_relation_request_approved
                     [type, target_status&.id].join('-')
                   when :follow, :'admin.sign_up'
                     type

@@ -64,7 +64,7 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
 
   def approve
     authorize @api_v1_k_tag_delete_relation_request, :approve?
-    render json: {error: "already reviewed"}, status: :unprocessable_entity if @api_v1_k_tag_delete_relation_request.reviewd?
+    render json: {error: "already reviewed"}, status: :unprocessable_entity if @api_v1_k_tag_delete_relation_request.reviewed?
     # already_created?
     if @api_v1_k_tag_delete_relation_request.approved?
       render json: { error: "already approved" }, status: :unprocessable_entity

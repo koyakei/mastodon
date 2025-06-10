@@ -9,6 +9,7 @@ import type {
   NotificationWithStatusType,
 } from 'mastodon/api_types/notifications';
 import type { ApiReportJSON } from 'mastodon/api_types/reports';
+import type { ApiKTagAddRelationRequestJSON } from '../api_types/k_tags';
 
 // Maximum number of avatars displayed in a notification group
 // This corresponds to the max lenght of `group.sampleAccountIds`
@@ -26,6 +27,11 @@ interface BaseNotificationWithStatus<Type extends NotificationWithStatusType>
   statusId: string | undefined;
 }
 
+interface BaseNotificationKTagAddRelationRequestWithStatus
+  extends BaseNotificationWithStatus<'k_tag_add_relation_request'>{
+  kTagAddRelationRequest: ApiKTagAddRelationRequestJSON[];
+}
+
 interface BaseNotification<Type extends NotificationType>
   extends BaseNotificationGroup {
   type: Type;
@@ -41,6 +47,7 @@ export type NotificationGroupUpdate = BaseNotificationWithStatus<'update'>;
 export type NotificationGroupFollow = BaseNotification<'follow'>;
 export type NotificationGroupFollowRequest = BaseNotification<'follow_request'>;
 export type NotificationGroupAdminSignUp = BaseNotification<'admin.sign_up'>;
+export type NotificationGroupKTagAddRelationRequest = BaseNotificationKTagAddRelationRequestWithStatus;
 
 export type AccountWarningAction =
   | 'none'
@@ -95,7 +102,8 @@ export type NotificationGroup =
   | NotificationGroupSeveredRelationships
   | NotificationGroupAdminSignUp
   | NotificationGroupAdminReport
-  | NotificationGroupAnnualReport;
+  | NotificationGroupAnnualReport
+  | NotificationGroupKTagAddRelationRequest;
 
 function createReportFromJSON(reportJSON: ApiReportJSON): Report {
   const { target_account, ...report } = reportJSON;
@@ -137,6 +145,7 @@ export function createNotificationGroupFromJSON(
     case 'reblog':
     case 'status':
     case 'mention':
+    case 'k_tag_add_relation_request':
     case 'poll':
     case 'update': {
       const { status_id: statusId, ...groupWithoutStatus } = group;

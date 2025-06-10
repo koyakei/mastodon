@@ -143,7 +143,9 @@ class NavigationPanel extends Component {
             {banner}
           </div>
         }
-
+        <div>
+          <Link to='/k_tags/new'>タグの登録</Link>
+        </div>
         <div className='navigation-panel__menu'>
           {signedIn && (
             <>

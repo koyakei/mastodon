@@ -17,7 +17,11 @@ class LocalNotificationWorker
     # should replace the previous ones.
     if type == 'update'
       Notification.where(account: receiver, activity: activity, type: 'update').in_batches.delete_all
-    elsif Notification.where(account: receiver, activity: activity, type: type).any?
+    elsif Notification.where(account: receiver, activity: activity, type: type).any? &&
+        !['k_tag_add_relation_request',
+        'k_tag_add_relation_request_approved',
+        'k_tag_add_relation_request_denied',
+         'k_tag_delete_relation_request'].include?(type)
       return
     end
 

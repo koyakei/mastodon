@@ -69,7 +69,7 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
   end
 
   def approve
-    render json: {error: "already reviewed"}, status: :unprocessable_entity if @k_tag_add_relation_request.reviewd?
+    render json: {error: "already reviewed"}, status: :unprocessable_entity if @k_tag_add_relation_request.reviewed?
     authorize @k_tag_add_relation_request, :approve?
     @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: @k_tag_add_relation_request.k_tag, status_id: @k_tag_add_relation_request.status_id)
     if @k_tag_relation.valid?
@@ -77,13 +77,14 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
         @k_tag_relation.save!
         @k_tag_add_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || "")
         LocalNotificationWorker.perform_async(@k_tag_add_relation_request.requester_id,
-        @k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_approved_add_relation_request')
+        @k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
         UpdateStatusService.new.call(
           @k_tag_relation.status,
           current_user.account_id,
           k_tag_add_relation_request: @k_tag_add_relation_request
         )
-        KTagTraidingHistory.create!(
+        Rails.logger.debug "どうなっている＿"
+        KTagTradingHistory.create!(
           account_id: current_user.account_id,
           k_tag_id: @k_tag_add_relation_request.k_tag_id,
           status_id: @k_tag_add_relation_request.status_id)
@@ -100,11 +101,11 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
   end
 
   def deny
-    render json: {error: "already reviewed"}, status: :unprocessable_entity if @k_tag_add_relation_request.reviewd?
+    render json: {error: "already reviewed"}, status: :unprocessable_entity if @k_tag_add_relation_request.reviewed?
     authorize @k_tag_add_relation_request, :deny?
     if @k_tag_add_relation_request.update(request_status: :denied, review_comment: params[:review_comment] || "")
       LocalNotificationWorker.perform_async(@api_v1_k_tag_delete_relation_request.requester_id,
-                                            @api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest', 'k_tag_denied_add_relation_request')
+                                            @api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest', 'k_tag_add_relation_request_denied')
                                             UpdateStatusService.new.call(
                                               @k_tag_relation.status,
                                               current_user.account_id,

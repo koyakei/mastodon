@@ -38,8 +38,8 @@ function getExcludedTypes(state: RootState) {
   const activeFilter = selectSettingsNotificationsQuickFilterActive(state);
 
   return activeFilter === 'all'
-    ? selectSettingsNotificationsExcludedTypes(state)
-    : excludeAllTypesExcept(activeFilter);
+    // ? selectSettingsNotificationsExcludedTypes(state)
+    excludeAllTypesExcept(activeFilter);
 }
 
 function dispatchAssociatedRecords(

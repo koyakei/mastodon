@@ -17,7 +17,7 @@ class REST::KTagAddRelationRequestSerializer < ActiveModel::Serializer
   end
 
   def status_id
-    object.status.id.to_s
+    object.status_id.to_s
   end
 
   def is_owned

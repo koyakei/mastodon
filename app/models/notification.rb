@@ -106,7 +106,7 @@ class Notification < ApplicationRecord
     poll: [poll: :status],
     update: :status,
     'admin.report': [report: :target_account],
-    k_tag_add_relation_request: [:k_tag_add_relation_request]
+    k_tag_add_relation_request: :status
   }.freeze
 
   belongs_to :account, optional: true
@@ -137,7 +137,6 @@ class Notification < ApplicationRecord
     @type ||= (super || LEGACY_TYPE_CLASS_MAP[activity_type]).to_sym
   end
 
-  # ktag 系ではここはいじらないでいく
   def target_status
     case type
     when :status, :update
@@ -150,6 +149,10 @@ class Notification < ApplicationRecord
       mention&.status
     when :poll
       poll&.status
+    when :k_tag_add_relation_request
+      k_tag_add_relation_request.status
+    when :k_tag_delete_relation_request
+      k_tag_delete_relation_request.status
     end
   end
 
@@ -160,19 +163,24 @@ class Notification < ApplicationRecord
                         else
                           types.map(&:to_sym) & TYPES
                         end
-
+      Rails.logger.debug "exclude_types2 #{exclude_types}"
+      Rails.logger.debug "requested_types2 #{requested_types}"
       requested_types -= exclude_types.map(&:to_sym)
-
+      Rails.logger.debug "afdddsdf #{requested_types}"
       all.tap do |scope|
         scope.merge!(where(filtered: false)) unless include_filtered || from_account_id.present?
         scope.merge!(where(from_account_id: from_account_id)) if from_account_id.present?
+        Rails.logger.debug "afsdafs #{requested_types}"
+        Rails.logger.debug "afsdafdassdffs #{where(type: requested_types)}"
         scope.merge!(where(type: requested_types)) unless requested_types.size == TYPES.size
       end
     end
 
     def preload_cache_collection_target_statuses(notifications, &_block)
       notifications.group_by(&:type).each do |type, grouped_notifications|
+
         associations = TARGET_STATUS_INCLUDES_BY_TYPE[type]
+        # Rails.logger.debug("safsfasafdsfda #{associations} #{type} #{grouped_notifications}")
         next unless associations
 
         # Instead of using the usual `includes`, manually preload each type.

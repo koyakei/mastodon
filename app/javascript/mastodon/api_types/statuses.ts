@@ -122,17 +122,15 @@ export interface ApiStatusJSON {
 
 export interface ApiKTagAddRelationRequestJSON
 {
-  k_tag: ApiKTagJSON;
-  status: ApiStatusJSON;
-  requester: ApiAccountJSON;
+  // k_tag: ApiKTagJSON;
+  // requester: ApiAccountJSON;
   request_status: number; // 0: pending, 1: accepted, 2: rejected
 }
 
 export interface ApiKTagDeleteRelationRequestJSON
 {
-  k_tag: ApiKTagJSON;
-  status: ApiStatusJSON;
-  requester: ApiAccountJSON;
+  // k_tag: ApiKTagJSON;
+  // requester: ApiAccountJSON;
   request_status: number; // 0: pending, 1: accepted, 2: rejected
 }
 

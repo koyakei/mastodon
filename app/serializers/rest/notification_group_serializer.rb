@@ -10,10 +10,15 @@ class REST::NotificationGroupSerializer < ActiveModel::Serializer
 
   attribute :sample_account_ids
   attribute :status_id, if: :status_type?
+  belongs_to :k_tag_add_relation_request, if: :k_tag_add_relation_request_type?, serializer: REST::KTagAddRelationRequestSerializer
   belongs_to :report, if: :report_type?, serializer: REST::ReportSerializer
   belongs_to :account_relationship_severance_event, key: :event, if: :relationship_severance_event?, serializer: REST::AccountRelationshipSeveranceEventSerializer
   belongs_to :account_warning, key: :moderation_warning, if: :moderation_warning_event?, serializer: REST::AccountWarningSerializer
   belongs_to :generated_annual_report, key: :annual_report, if: :annual_report_event?, serializer: REST::AnnualReportEventSerializer
+
+  def k_tag_add_relation_request_type?
+    [:k_tag_add_relation_request].include?(object.type)
+  end
 
   def sample_account_ids
     object.sample_accounts.pluck(:id).map(&:to_s)
@@ -24,7 +29,7 @@ class REST::NotificationGroupSerializer < ActiveModel::Serializer
   end
 
   def status_type?
-    [:favourite, :reblog, :status, :mention, :poll, :update].include?(object.type)
+    [:favourite, :reblog, :status, :mention, :poll, :update, :k_tag_add_relation_request].include?(object.type)
   end
 
   def report_type?

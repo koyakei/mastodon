@@ -93,14 +93,14 @@ export const NotificationGroup: React.FC<{
         <NotificationMention unread={unread} notification={notificationGroup} />
       );
       break;
-    // case 'k_tag_add_request':
-    //   content = (
-    //     <NotificationKTagAddRelationRequest
-    //       unread={unread}
-    //       notification={notificationGroup}
-    //     />
-    //   );
-    //   break;
+    case 'k_tag_add_relation_request':
+      content = (
+        <NotificationKTagAddRelationRequest
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
     case 'follow':
       content = (
         <NotificationFollow unread={unread} notification={notificationGroup} />
