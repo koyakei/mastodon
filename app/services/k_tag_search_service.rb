@@ -15,10 +15,11 @@ class KTagSearchService < BaseService
     private
 
     def from_elasticsearch
-      definition = KTagsIndex.query(elastic_search_query)
-      definition = definition.filter(elastic_search_filter) if @options[:exclude_unreviewed]
+      # definition = KTagsIndex
+      # definition = definition.filter(elastic_search_filter) if @options[:exclude_unreviewed]
 
-      ensure_exact_match(definition.limit(@limit).offset(@offset).objects.compact)
+      # ensure_exact_match(definition.limit(@limit).offset(@offset).objects.compact)
+      KTagsIndex.to_a
     rescue Faraday::ConnectionFailed, Parslet::ParseFailed
       nil
     end

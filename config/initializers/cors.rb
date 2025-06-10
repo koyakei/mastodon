@@ -9,8 +9,11 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins '*'
-
+    # origins 'jxkbhccv.asse.devtunnels.ms'
+    # resource '*',
+    #   headers: :any,
+    #   methods: [:get, :post, :put, :patch, :delete, :options, :head],
+    #   credentials: true
     with_options headers: :any, credentials: false do
       with_options methods: [:get] do
         resource '/.well-known/*'

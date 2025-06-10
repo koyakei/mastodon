@@ -43,6 +43,7 @@ class StatusesSearchService < BaseService
   end
 
   def parsed_query
+    Rails.logger.debug "fadsafds #{@query}"
     SearchQueryTransformer.new.apply(SearchQueryParser.new.parse(@query), current_account: @account)
   end
 
