@@ -24,7 +24,7 @@ class SearchQueryTransformer < Parslet::Transform
     end
 
     def request
-      search = Chewy::Search::Request.new(*indexes).filter(default_filter)
+      search = Chewy::Search::Request.new(*indexes)
       must_clauses.each { |clause| search = search.query.must(clause.to_query) }
       must_not_clauses.each { |clause| search = search.query.must_not(clause.to_query) }
       filter_clauses.each { |clause| search = search.filter(**clause.to_query) }
