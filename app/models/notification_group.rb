@@ -52,6 +52,7 @@ class NotificationGroup < ActiveModelSerializers::Model
            :account_warning,
            :generated_annual_report,
            :k_tag_add_relation_request,
+           :k_tag_delete_relation_request,
            to: :notification, prefix: false
 
   class << self

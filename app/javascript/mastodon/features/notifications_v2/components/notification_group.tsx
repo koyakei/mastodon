@@ -14,6 +14,11 @@ import { NotificationFavourite } from './notification_favourite';
 import { NotificationFollow } from './notification_follow';
 import { NotificationFollowRequest } from './notification_follow_request';
 import { NotificationKTagAddRelationRequest } from './notification_k_tag_add_relation_request';
+import { NotificationKTagAddRelationRequestApproved } from './notification_k_tag_add_relation_request_approved';
+import { NotificationKTagAddRelationRequestDenied } from './notification_k_tag_add_relation_request_denied';
+import { NotificationKTagDeleteRelationRequest } from './notification_k_tag_delete_relation_request';
+import { NotificationKTagDeleteRelationRequestApproved } from './notification_k_tag_delete_relation_request_approved';
+import { NotificationKTagDeleteRelationRequestDenied } from './notification_k_tag_delete_relation_request_denied';
 import { NotificationMention } from './notification_mention';
 import { NotificationModerationWarning } from './notification_moderation_warning';
 import { NotificationPoll } from './notification_poll';
@@ -96,6 +101,46 @@ export const NotificationGroup: React.FC<{
     case 'k_tag_add_relation_request':
       content = (
         <NotificationKTagAddRelationRequest
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
+    case 'k_tag_add_relation_request_approved':
+      content = (
+        <NotificationKTagAddRelationRequestApproved
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
+    case 'k_tag_add_relation_request_denied':
+      content = (
+        <NotificationKTagAddRelationRequestDenied
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
+    case 'k_tag_delete_relation_request':
+      content = (
+        <NotificationKTagDeleteRelationRequest
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
+    case 'k_tag_delete_relation_request_approved':
+      content = (
+        <NotificationKTagDeleteRelationRequestApproved
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
+    case 'k_tag_delete_relation_request_denied':
+      content = (
+        <NotificationKTagDeleteRelationRequestDenied
           unread={unread}
           notification={notificationGroup}
         />

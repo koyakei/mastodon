@@ -134,7 +134,7 @@ class Notification < ApplicationRecord
   scope :without_suspended, -> { joins(:from_account).merge(Account.without_suspended) }
 
   def type
-    @type ||= (super || LEGACY_TYPE_CLASS_MAP[activity_type]).to_sym
+     (super || LEGACY_TYPE_CLASS_MAP[activity_type]).to_sym
   end
 
   def target_status
@@ -151,7 +151,15 @@ class Notification < ApplicationRecord
       poll&.status
     when :k_tag_add_relation_request
       k_tag_add_relation_request.status
+    when :k_tag_add_relation_request_approved
+      k_tag_add_relation_request.status
+    when :k_tag_add_relation_request_denied
+      k_tag_add_relation_request.status
     when :k_tag_delete_relation_request
+      k_tag_delete_relation_request.status
+    when :k_tag_delete_relation_request_approved
+      k_tag_delete_relation_request.status
+    when :k_tag_delete_relation_request_denied
       k_tag_delete_relation_request.status
     end
   end
@@ -235,9 +243,17 @@ class Notification < ApplicationRecord
     when 'KTagRelation'
       self.from_account_id = activity&.k_tag_relation&.account_id
     when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく
-      self.from_account_id = activity&.requester&.id
+      if [:k_tag_add_relation_request_approved, :k_tag_add_relation_request_denied].include?(type.to_sym)
+        self.from_account_id = activity&.target_account&.id
+      else
+        self.from_account_id = activity&.requester&.id
+      end
     when 'KTagDeleteRelationRequest'
-      self.from_account_id = activity&.requester&.id
+      if [:k_tag_delete_relation_request_approved, :k_tag_delete_relation_request_denied].include?(type.to_sym)
+        self.from_account_id = activity&.target_account&.id
+      else
+        self.from_account_id = activity&.requester&.id
+      end
     when 'AccountRelationshipSeveranceEvent', 'AccountWarning', 'GeneratedAnnualReport'
 
       # These do not really have an originating account, but this is mandatory

@@ -60,15 +60,19 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
           k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
           render json: k_tag_add_relation_request.status, serializer: REST::StatusSerializer
         rescue ActiveRecord::RecordInvalid => e
-          render json: { errors: k_tag_add_relation_request.errors.full_messages }, status: :internal_server_error
+          render json: { errors:  "通知失敗" }, status: :internal_server_error
         end
       else
-        render json: { errors: "すでにリクエストしているよ #{k_tag_add_relation_request.errors.full_messages}" }, status: :unprocessable_entity
+        LocalNotificationWorker.new.perform(k_tag_add_relation_request.k_tag.account_id,
+          k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
+        render json: { errors: "すでにリクエストしているよ #{k_tag_add_relation_request.valid?}" }, status: :unprocessable_entity
       end
     end
   end
 
   def approve
+    LocalNotificationWorker.new.perform(@k_tag_add_relation_request.requester.id,
+      params[:id], 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
     render json: {error: "already reviewed"}, status: :unprocessable_entity if @k_tag_add_relation_request.reviewed?
     authorize @k_tag_add_relation_request, :approve?
     @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: @k_tag_add_relation_request.k_tag, status_id: @k_tag_add_relation_request.status_id)
@@ -93,10 +97,13 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
         render :edit, status: :unprocessable_entity
       end
     else
-      already_requested = KTagAddRelationRequest.where(
+      @already_approved = KTagAddRelationRequest.where(
         target_account_id: current_user.id, k_tag: params[:k_tag_id], status_id: params[:status_id])
         KTagAddRelationRequest.update(request_status: :approved)
-      render json: { errors: "already related #{@k_tag_relation.valid?}" }, status: :conflict
+
+      render json: { errors: "already related #{@k_tag_relation.valid?}" }, status: :conflict if @already_approved.count > 0
+
+      # render json: { errors: "notify again #{@k_tag_relation.valid?}" }, status: :conflict
     end
   end
 
@@ -138,7 +145,7 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
   end
 
   def api_v1_k_tag_add_relation_request_params
-    params.permit(:account_id, :status_id, :k_tag_id, :request_comment, :review_comment)
+    params.permit(:id, :account_id, :status_id, :k_tag_id, :request_comment, :review_comment)
   end
 
   def require_user!

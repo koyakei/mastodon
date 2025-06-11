@@ -9,7 +9,10 @@ import type {
   NotificationWithStatusType,
 } from 'mastodon/api_types/notifications';
 import type { ApiReportJSON } from 'mastodon/api_types/reports';
-import type { ApiKTagAddRelationRequestJSON } from '../api_types/k_tags';
+
+import type { ApiKTagAddRelationRequestJSON,
+  ApiKTagDeleteRelationRequestJSON
+} from '../api_types/k_tags';
 
 // Maximum number of avatars displayed in a notification group
 // This corresponds to the max lenght of `group.sampleAccountIds`
@@ -32,6 +35,31 @@ interface BaseNotificationKTagAddRelationRequestWithStatus
   kTagAddRelationRequest: ApiKTagAddRelationRequestJSON[];
 }
 
+interface BaseNotificationKTagAddRelationRequestApprovedWithStatus
+  extends BaseNotificationWithStatus<'k_tag_add_relation_request_approved'>{
+  kTagAddRelationRequest: ApiKTagAddRelationRequestJSON[];
+}
+
+interface BaseNotificationKTagAddRelationRequestDeniedWithStatus
+  extends BaseNotificationWithStatus<'k_tag_add_relation_request_denied'>{
+  kTagAddRelationRequest: ApiKTagAddRelationRequestJSON[];
+}
+
+interface BaseNotificationKTagDeleteRelationRequestWithStatus
+  extends BaseNotificationWithStatus<'k_tag_delete_relation_request'>{
+  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON[];
+}
+
+interface BaseNotificationKTagDeleteRelationRequestApprovedWithStatus
+  extends BaseNotificationWithStatus<'k_tag_delete_relation_request_approved'>{
+  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON[];
+}
+
+interface BaseNotificationKTagDeleteRelationRequestDeniedWithStatus
+  extends BaseNotificationWithStatus<'k_tag_delete_relation_request_denied'>{
+  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON[];
+}
+
 interface BaseNotification<Type extends NotificationType>
   extends BaseNotificationGroup {
   type: Type;
@@ -48,6 +76,11 @@ export type NotificationGroupFollow = BaseNotification<'follow'>;
 export type NotificationGroupFollowRequest = BaseNotification<'follow_request'>;
 export type NotificationGroupAdminSignUp = BaseNotification<'admin.sign_up'>;
 export type NotificationGroupKTagAddRelationRequest = BaseNotificationKTagAddRelationRequestWithStatus;
+export type NotificationGroupKTagAddRelationRequestApproved = BaseNotificationKTagAddRelationRequestApprovedWithStatus;
+export type NotificationGroupKTagAddRelationRequestDenied = BaseNotificationKTagAddRelationRequestDeniedWithStatus;
+export type NotificationGroupKTagDeleteRelationRequest = BaseNotificationKTagDeleteRelationRequestWithStatus;
+export type NotificationGroupKTagDeleteRelationRequestDenied = BaseNotificationKTagDeleteRelationRequestDeniedWithStatus;
+export type NotificationGroupKTagDeleteRelationRequestApproved = BaseNotificationKTagDeleteRelationRequestApprovedWithStatus;
 
 export type AccountWarningAction =
   | 'none'
@@ -103,7 +136,12 @@ export type NotificationGroup =
   | NotificationGroupAdminSignUp
   | NotificationGroupAdminReport
   | NotificationGroupAnnualReport
-  | NotificationGroupKTagAddRelationRequest;
+  | NotificationGroupKTagAddRelationRequest
+  | NotificationGroupKTagAddRelationRequestApproved
+  | NotificationGroupKTagAddRelationRequestDenied
+  | NotificationGroupKTagDeleteRelationRequest
+  | NotificationGroupKTagDeleteRelationRequestApproved
+  | NotificationGroupKTagDeleteRelationRequestDenied;
 
 function createReportFromJSON(reportJSON: ApiReportJSON): Report {
   const { target_account, ...report } = reportJSON;
@@ -146,6 +184,7 @@ export function createNotificationGroupFromJSON(
     case 'status':
     case 'mention':
     case 'k_tag_add_relation_request':
+    case 'k_tag_delete_relation_request':
     case 'poll':
     case 'update': {
       const { status_id: statusId, ...groupWithoutStatus } = group;
