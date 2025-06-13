@@ -1,8 +1,8 @@
 class Api::V1::KTagAddRelationRequestsController < Api::BaseController
   include Authorization
 
-  before_action :set_api_v1_k_tag_add_relation_request, only: %i[show approve deny destroy]
-  before_action -> { authorize_if_got_token! :read, :'read:statuses' }, except: [:create, :approve, :deny, :destroy]
+  before_action :set_api_v1_k_tag_add_relation_request, only: %i(show approve deny destroy)
+  before_action -> { authorize_if_got_token! :read, :'read:statuses' }, except: [:create, :approve, :deny]
   before_action -> { doorkeeper_authorize! :write, :'write:statuses' }, only: [:create, :approve, :deny, :destroy]
   before_action :require_user!, except: [:index, :show]
   before_action :check_get_limit, only: [:index]
@@ -12,15 +12,16 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
   end
 
   def show
+    render json: @k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
   end
 
   def create
     ac = KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
     k_tag_add_relation_request = KTagAddRelationRequest.new(api_v1_k_tag_add_relation_request_params.merge(
-      requester_id: current_user.account_id,
-      target_account_id: ac,
-      request_status: :not_reviewed
-    ))
+                                                              requester_id: current_user.account_id,
+                                                              target_account_id: ac,
+                                                              request_status: :not_reviewed
+                                                            ))
 
     if current_user.account.id == KTag.find_by(id: api_v1_k_tag_add_relation_request_params[:k_tag_id]).account_id
       k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id], status_id: api_v1_k_tag_add_relation_request_params[:status_id])
@@ -34,90 +35,90 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
           KTagTradingHistory.create!(
             account_id: current_user.account_id,
             k_tag_id: api_v1_k_tag_add_relation_request_params[:k_tag_id],
-            status_id: api_v1_k_tag_add_relation_request_params[:status_id])
-          render json: k_tag_relation.status, status: :created, serializer: REST::StatusSerializer
+            status_id: api_v1_k_tag_add_relation_request_params[:status_id]
+          )
+          render json: k_tag_relation, status: 201, serializer: REST::KTagAddRelationRequestForUserSerializer
+        elsif k_tag_relation.errors.of_kind?(:k_tag_id, :taken) ||
+              k_tag_relation.errors.any? { |e| e.type == :taken }
+          render json: { error: 'tag relation already exists' }, status: 409
         else
-          if k_tag_relation.errors.of_kind?(:k_tag_id, :taken) ||
-            k_tag_relation.errors.any? { |e| e.type == :taken }
-            render json: { error: 'tag relation already exists' }, status: :conflict
-          else
-            render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
-          end
+          render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
         end
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: k_tag_relation.errors.full_messages }, status: :unprocessable_entity
       end
-    else
-      if k_tag_add_relation_request.valid?
-        UpdateStatusService.new.call(
-            k_tag_add_relation_request.status,
-            current_user.account.id,
-            k_tag_add_relation_request: k_tag_add_relation_request
-          )
-        begin
-          k_tag_add_relation_request.save!
-          LocalNotificationWorker.new.perform(k_tag_add_relation_request.k_tag.account_id,
-          k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
-          render json: k_tag_add_relation_request.status, serializer: REST::StatusSerializer
-        rescue ActiveRecord::RecordInvalid => e
-          render json: { errors:  "通知失敗" }, status: :internal_server_error
-        end
-      else
+    elsif k_tag_add_relation_request.valid?
+      UpdateStatusService.new.call(
+        k_tag_add_relation_request.status,
+        current_user.account.id,
+        k_tag_add_relation_request: k_tag_add_relation_request
+      )
+      begin
+        k_tag_add_relation_request.save!
         LocalNotificationWorker.new.perform(k_tag_add_relation_request.k_tag.account_id,
-          k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
-        render json: { errors: "すでにリクエストしているよ #{k_tag_add_relation_request.valid?}" }, status: :unprocessable_entity
+                                            k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
+        render json: k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: '通知失敗' }, status: 500
       end
+    else
+      LocalNotificationWorker.new.perform(k_tag_add_relation_request.k_tag.account_id,
+                                          k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request')
+      render json: { errors: "すでにリクエストしているよ #{k_tag_add_relation_request.valid?}" }, status: :unprocessable_entity
     end
   end
 
   def approve
     LocalNotificationWorker.new.perform(@k_tag_add_relation_request.requester.id,
-      params[:id], 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
-    render json: {error: "already reviewed"}, status: :unprocessable_entity if @k_tag_add_relation_request.reviewed?
+                                        params[:id], 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
+    return render json: { error: 'already reviewed' }, status: :unprocessable_entity if @k_tag_add_relation_request.reviewed?
+
     authorize @k_tag_add_relation_request, :approve?
     @k_tag_relation = KTagRelation.new(account_id: current_user.account_id, k_tag: @k_tag_add_relation_request.k_tag, status_id: @k_tag_add_relation_request.status_id)
     if @k_tag_relation.valid?
       ActiveRecord::Base.transaction do
         @k_tag_relation.save!
-        @k_tag_add_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || "")
+        @k_tag_add_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || '')
         LocalNotificationWorker.perform_async(@k_tag_add_relation_request.requester_id,
-        @k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
+                                              @k_tag_add_relation_request.id, 'KTagAddRelationRequest', 'k_tag_add_relation_request_approved')
         UpdateStatusService.new.call(
           @k_tag_relation.status,
           current_user.account_id,
           k_tag_add_relation_request: @k_tag_add_relation_request
         )
-        Rails.logger.debug "どうなっている＿"
+        Rails.logger.debug 'どうなっている＿'
         KTagTradingHistory.create!(
           account_id: current_user.account_id,
           k_tag_id: @k_tag_add_relation_request.k_tag_id,
-          status_id: @k_tag_add_relation_request.status_id)
+          status_id: @k_tag_add_relation_request.status_id
+        )
         render json: @k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
-      rescue ActiveRecord::RecordInvalid => exception
+      rescue ActiveRecord::RecordInvalid => e
         render :edit, status: :unprocessable_entity
       end
     else
       @already_approved = KTagAddRelationRequest.where(
-        target_account_id: current_user.id, k_tag: params[:k_tag_id], status_id: params[:status_id])
-        KTagAddRelationRequest.update(request_status: :approved)
+        target_account_id: current_user.id, k_tag: params[:k_tag_id], status_id: params[:status_id]
+      )
+      KTagAddRelationRequest.update(request_status: :approved)
 
-      render json: { errors: "already related #{@k_tag_relation.valid?}" }, status: :conflict if @already_approved.count > 0
+      render json: { errors: "already related #{@k_tag_relation.valid?}" }, status: 409 if @already_approved.count > 0
 
       # render json: { errors: "notify again #{@k_tag_relation.valid?}" }, status: :conflict
     end
   end
 
   def deny
-    render json: {error: "already reviewed"}, status: :unprocessable_entity if @k_tag_add_relation_request.reviewed?
+    render json: { error: 'already reviewed' }, status: :unprocessable_entity if @k_tag_add_relation_request.reviewed?
     authorize @k_tag_add_relation_request, :deny?
-    if @k_tag_add_relation_request.update(request_status: :denied, review_comment: params[:review_comment] || "")
+    if @k_tag_add_relation_request.update(request_status: :denied, review_comment: params[:review_comment] || '')
       LocalNotificationWorker.perform_async(@api_v1_k_tag_delete_relation_request.requester_id,
                                             @api_v1_k_tag_delete_relation_request.id, 'KTagDeleteRelationRequest', 'k_tag_add_relation_request_denied')
-                                            UpdateStatusService.new.call(
-                                              @k_tag_relation.status,
-                                              current_user.account_id,
-                                              k_tag_add_relation_request: @k_tag_add_relation_request
-                                            )
+      UpdateStatusService.new.call(
+        @k_tag_relation.status,
+        current_user.account_id,
+        k_tag_add_relation_request: @k_tag_add_relation_request
+      )
       render json: @k_tag_add_relation_request
     else
       render :edit, status: :unprocessable_entity
@@ -125,9 +126,10 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
   end
 
   def destroy
+    authorize @k_tag_add_relation_request, :destroy?
+    NotifyService.new.cancel(@k_tag_add_relation_request.target_account, @k_tag_add_relation_request.class.name, @k_tag_add_relation_request)
     @k_tag_add_relation_request.destroy!
-    stream_and_notify
-    redirect_to api_v1_k_tag_add_relation_requests_url, notice: "K tag add relation request was successfully destroyed.", status: :see_other
+    render json: @k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
   end
 
   def check_get_limit

@@ -17,11 +17,11 @@ class REST::NotificationGroupSerializer < ActiveModel::Serializer
   belongs_to :generated_annual_report, key: :annual_report, if: :annual_report_event?, serializer: REST::AnnualReportEventSerializer
 
   def k_tag_add_relation_request_type?
-    [:k_tag_add_relation_request, :k_tag_add_relation_request_approved, :k_tag_add_relation_request_denied.include?(object.type)
+    [:k_tag_add_relation_request, :k_tag_add_relation_request_approved, :k_tag_add_relation_request_denied].include?(object.type)
   end
-  
+
   def k_tag_delete_relation_request_type?
-    [:k_tag_delete_relation_request, :k_tag_delete_relation_request_approved, :k_tag_delete_relation_request_denied.include?(object.type)
+    [:k_tag_delete_relation_request, :k_tag_delete_relation_request_approved, :k_tag_delete_relation_request_denied].include?(object.type)
   end
 
   def sample_account_ids

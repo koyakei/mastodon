@@ -236,6 +236,10 @@ class NotifyService < BaseService
     nil
   end
 
+  def cancel(recipient, type, activity)
+    Notification.where(account: recipient, type: type, activity: activity).destroy_all
+  end
+
   private
 
   def drop?

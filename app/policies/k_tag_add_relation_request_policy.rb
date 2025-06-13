@@ -10,8 +10,6 @@ class KTagAddRelationRequestPolicy < KTagPolicy
   end
 
   def destroy?
-    current_account&.user.id == record.requester_id
+    current_account.id == record.requester_id
   end
-
 end
-

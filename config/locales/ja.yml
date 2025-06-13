@@ -1540,6 +1540,8 @@ ja:
           follow_request: フォローリクエストの通知メール
           mention: 返信の通知メール
           reblog: ブーストの通知メール
+          k_tag_add_relation_request: タグ追加リクエストのメール
+          k_tag_delete_relation_request: タグ削除リクエストのメール
       resubscribe_html: 誤って解除した場合は<a href="%{settings_path}">メール通知の設定</a>から再購読できます。
       success_html: Mastodon (%{domain}) から %{email} への「%{type}」の配信が停止されました。
       title: 購読の解除
