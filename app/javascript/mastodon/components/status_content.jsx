@@ -111,6 +111,8 @@ class StatusContent extends PureComponent {
           name: it.get('k_tag').get('name'),
           state: (it.get?.('k_tag_delete_relation_requests') ?? false) ?  TAG_STATES.ADDED  : TAG_STATES.DELETE_REQUESTED,
           statusId: it.get('status_id'),
+          isOwned: it.get('is_owned'),
+          kTagRelationId: it.get('id')
         })).filter(it => ({
           id: it
         }))
@@ -246,6 +248,7 @@ class StatusContent extends PureComponent {
       </button>
     );
   }
+
   renderTagAutocomplete() {
     const { tags, suggestions, loading, error } = this.state;
 

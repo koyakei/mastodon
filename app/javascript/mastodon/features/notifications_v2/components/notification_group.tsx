@@ -122,30 +122,30 @@ export const NotificationGroup: React.FC<{
         />
       );
       break;
-    // case 'k_tag_delete_relation_request':
-    //   content = (
-    //     <NotificationKTagDeleteRelationRequest
-    //       unread={unread}
-    //       notification={notificationGroup}
-    //     />
-    //   );
-    //   break;
-    // case 'k_tag_delete_relation_request_approved':
-    //   content = (
-    //     <NotificationKTagDeleteRelationRequestApproved
-    //       unread={unread}
-    //       notification={notificationGroup}
-    //     />
-    //   );
-    //   break;
-    // case 'k_tag_delete_relation_request_denied':
-    //   content = (
-    //     <NotificationKTagDeleteRelationRequestDenied
-    //       unread={unread}
-    //       notification={notificationGroup}
-    //     />
-    //   );
-    //   break;
+    case 'k_tag_delete_relation_request':
+      content = (
+        <NotificationKTagDeleteRelationRequest
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
+    case 'k_tag_delete_relation_request_approved':
+      content = (
+        <NotificationKTagDeleteRelationRequestApproved
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
+    case 'k_tag_delete_relation_request_denied':
+      content = (
+        <NotificationKTagDeleteRelationRequestDenied
+          unread={unread}
+          notification={notificationGroup}
+        />
+      );
+      break;
     case 'follow':
       content = (
         <NotificationFollow unread={unread} notification={notificationGroup} />

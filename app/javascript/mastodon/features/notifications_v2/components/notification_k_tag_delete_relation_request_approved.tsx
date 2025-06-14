@@ -11,7 +11,7 @@ const mentionLabelRenderer: LabelRenderer = () => (
   <FormattedMessage id='notification.label.mention' defaultMessage='Mention' />
 );
 
-export const NotificationKTagAddRelationRequestApproved: React.FC<{
+export const NotificationKTagDeleteRelationRequestApproved: React.FC<{
   notification: NotificationGroupKTagDeleteRelationRequestApproved;
   unread: boolean;
 }> = ({ notification, unread }) => {
