@@ -104,13 +104,15 @@ class StatusContent extends PureComponent {
           kTagAddRelationRequestId: it.get('id'),
           isOwned: it.get('is_owned')
         })),
-      // こちらは全件追加
+      // こちらは全件追加重複して削除リクエストが出ているものを削除リクエスト済みに変更したい
       ...this.props.status.get('k_tag_relations')
         .map(it => ({
           id: it.get('k_tag_id'),
           name: it.get('k_tag').get('name'),
-          state: TAG_STATES.ADDED,
+          state: (it.get?.('k_tag_delete_relation_requests') ?? false) ?  TAG_STATES.ADDED  : TAG_STATES.DELETE_REQUESTED,
           statusId: it.get('status_id'),
+        })).filter(it => ({
+          id: it
         }))
     ], //this.props.status.k_tag_relation
     suggestions: [],
