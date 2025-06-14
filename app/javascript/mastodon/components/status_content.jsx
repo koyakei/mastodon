@@ -101,7 +101,8 @@ class StatusContent extends PureComponent {
           name: it.get('k_tag').get('name'),
           statusId: it.get('status_id'),
           state: TAG_STATES.ADD_REQUESTED,
-          k_tag_add_relation_request_id: it.get('id')
+          kTagAddRelationRequestId: it.get('id'),
+          isOwned: it.get('is_owned')
         })),
       // こちらは全件追加
       ...this.props.status.get('k_tag_relations')
@@ -178,7 +179,7 @@ class StatusContent extends PureComponent {
             )
           }));
       }).catch((error) => {
-        // 409 Conflictの場合は、すでに追加されているため、ADDED状態にする
+        // 409 Conflictの場合は、すでに追加されているため、ADDED状態にする　本当は競合している既存の行を返したい
         if (error.response && error.response.status === 409) {
           console.error('タグ追加リクエスト失敗:', error);
           this.setState(prevState => ({
@@ -202,7 +203,7 @@ class StatusContent extends PureComponent {
     // 1. 状態チェック（Mapであることを確認）
     const { tags } = this.state;
     const targetTag = tags[index];
-    if (targetTag.state == TAG_STATES.ADD_REQUESTED){
+    if (targetTag.state == TAG_STATES.ADD_REQUESTED && targetTag.isOwned){
       api().delete(`/api/v1/k_tag_add_relation_requests/${targetTag.k_tag_add_relation_request_id}`).then( (response) => {
         if (response.status === 200) { // タグの削除リクエストが成功した場合、タグを削除 自分の場合
           this.setState(prevState => ({
