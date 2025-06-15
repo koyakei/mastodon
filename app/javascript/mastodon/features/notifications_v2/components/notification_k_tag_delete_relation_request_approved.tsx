@@ -16,26 +16,18 @@ export const NotificationKTagDeleteRelationRequestApproved: React.FC<{
   unread: boolean;
 }> = ({ notification, unread }) => {
   const request = notification.k_tag_delete_relation_request
-  const user = notification.from
   return (
     <div>
-
-
-      {/* {kTagAddRelationRequest.request_status === 0 && ( */}
-
         <div>
           <div>
             {request.k_tag.name}
             <div className='account__avatar-wrapper'>
-                        <Avatar withLink account={request.requester as Account} size={36} />
-                      </div>
-
-                        {request.requester.acct}
-
+              <Avatar withLink account={request.requester as Account} size={36} />
+            </div>
+            {request.requester.acct}
           </div>
           承諾済み
         </div>
-      {/* )} */}
       <NotificationWithStatus
         type='mention'
         icon={ReplyIcon}

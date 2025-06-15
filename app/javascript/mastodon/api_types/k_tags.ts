@@ -10,23 +10,27 @@ export interface ApiKTagJSON {
 
 export interface ApiKTagAddRelationRequestJSON
 {
-  // k_tag: ApiKTagJSON;
-  // requester: ApiAccountJSON;
+  id: string
+  k_tag: ApiKTagJSON;
+  requester: ApiAccountJSON;
   request_status: number; // 0: pending, 1: accepted, 2: rejected
 }
 
 export interface ApiKTagDeleteRelationRequestJSON
 {
-  // k_tag: ApiKTagJSON;
+  id: string
   k_tag_realation: ApiKTagRelationJSON
   requester: ApiAccountJSON;
   request_status: number; // 0: pending, 1: accepted, 2: rejected
+  k_tag: ApiKTagJSON;
+
 }
 
 export interface ApiKTagRelationJSON
 {
   id : string;
   status_id: string;
+  name: string;
   requester_id: string;
   created_at: string;
   updated_at: string;

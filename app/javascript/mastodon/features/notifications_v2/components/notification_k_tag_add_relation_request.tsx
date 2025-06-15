@@ -3,7 +3,6 @@ import { FormattedMessage } from 'react-intl';
 import ReplyIcon from '@/material-icons/400-24px/reply-fill.svg?react';
 import api from 'mastodon/api';
 import { Avatar } from 'mastodon/components/avatar';
-import { DisplayName } from 'mastodon/components/display_name';
 import type { NotificationGroupKTagAddRelationRequest } from 'mastodon/models/notification_group';
 
 import type { LabelRenderer } from './notification_group_with_status';
