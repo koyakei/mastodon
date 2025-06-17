@@ -127,7 +127,6 @@ class Api::V1::KTagAddRelationRequestsController < Api::BaseController
 
   def destroy
     authorize @k_tag_add_relation_request, :destroy?
-    NotifyService.new.cancel(@k_tag_add_relation_request.target_account, @k_tag_add_relation_request.class.name, @k_tag_add_relation_request)
     @k_tag_add_relation_request.destroy!
     render json: @k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
   end
