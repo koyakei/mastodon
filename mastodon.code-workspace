@@ -6,6 +6,7 @@
 	],
 	"settings": {
 		"terminal.integrated.shellIntegration.enabled": false,
-		"terminal.integrated.inheritEnv": false
+		"terminal.integrated.inheritEnv": false,
+		"rubyLsp.bundleGemfile": ""
 	}
 }
