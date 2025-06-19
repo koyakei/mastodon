@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { FormattedMessage } from 'react-intl';
 
+import { createAccountFromServerJSON } from '@/mastodon/models/account';
 import ReplyIcon from '@/material-icons/400-24px/reply-fill.svg?react';
 import api from 'mastodon/api';
 import { Avatar } from 'mastodon/components/avatar';
@@ -19,12 +20,12 @@ export const NotificationKTagDeleteRelationRequest: React.FC<{
   notification: NotificationGroupKTagDeleteRelationRequest;
   unread: boolean;
 }> = ({ notification, unread }) => {
-  const kTagDeleteRelationRequest = notification.k_tag_add_relation_request
+  const kTagDeleteRelationRequest = notification.kTagDeleteRelationRequest
   const [isRequested , setIsRequested] = useState(false);
   function approveRequest(){
     api().post(`/api/v1/k_tag_delete_relation_requests/${kTagDeleteRelationRequest.id}/approve`).then(response => {
       setIsRequested (true)
-    }).catch(error => {NotificationKTagDeleteRelationRequestApproved
+    }).catch(error => {
 
     });
   }
@@ -42,7 +43,7 @@ export const NotificationKTagDeleteRelationRequest: React.FC<{
           <div>
             {kTagDeleteRelationRequest.k_tag.name}
             <div className='account__avatar-wrapper'>
-            <Avatar withLink account={kTagDeleteRelationRequest.requester as Account} size={36} />
+            <Avatar withLink account={createAccountFromServerJSON(kTagDeleteRelationRequest.requester)} size={36} />
           </div>
             {kTagDeleteRelationRequest.requester.acct}
           </div>

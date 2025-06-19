@@ -23,6 +23,7 @@ export interface ApiKTagDeleteRelationRequestJSON
   requester: ApiAccountJSON;
   request_status: number; // 0: pending, 1: accepted, 2: rejected
   k_tag: ApiKTagJSON;
+  is_owned: boolean;
 
 }
 

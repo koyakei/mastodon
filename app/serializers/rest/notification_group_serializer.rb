@@ -11,6 +11,7 @@ class REST::NotificationGroupSerializer < ActiveModel::Serializer
   attribute :sample_account_ids
   attribute :status_id, if: :status_type?
   belongs_to :k_tag_add_relation_request, if: :k_tag_add_relation_request_type?, serializer: REST::KTagAddRelationRequestSerializer
+  belongs_to :k_tag_delete_relation_request, if: :k_tag_delete_relation_request_type?, serializer: REST::KTagDeleteRelationRequestSerializer
   belongs_to :report, if: :report_type?, serializer: REST::ReportSerializer
   belongs_to :account_relationship_severance_event, key: :event, if: :relationship_severance_event?, serializer: REST::AccountRelationshipSeveranceEventSerializer
   belongs_to :account_warning, key: :moderation_warning, if: :moderation_warning_event?, serializer: REST::AccountWarningSerializer
@@ -34,10 +35,9 @@ class REST::NotificationGroupSerializer < ActiveModel::Serializer
 
   def status_type?
     [:favourite, :reblog, :status, :mention, :poll, :update, :k_tag_add_relation_request, :k_tag_add_relation_request_approved, :k_tag_add_relation_request_denied,
-    :k_tag_delete_relation_request,
-    :k_tag_delete_relation_request_approved,
-    :k_tag_delete_relation_request_denied,
-    ].include?(object.type)
+     :k_tag_delete_relation_request,
+     :k_tag_delete_relation_request_approved,
+     :k_tag_delete_relation_request_denied].include?(object.type)
   end
 
   def report_type?

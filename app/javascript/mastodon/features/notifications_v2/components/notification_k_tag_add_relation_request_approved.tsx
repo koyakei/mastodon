@@ -23,7 +23,7 @@ export const NotificationKTagAddRelationRequestApproved: React.FC<{
           <div>
             {kTagAddRelationRequest.k_tag.name}
             <div className='account__avatar-wrapper'>
-                        <Avatar withLink account={kTagAddRelationRequest.requester as Account} size={36} />
+                        <Avatar withLink account={kTagAddRelationRequest.requester} size={36} />
                       </div>
                         {kTagAddRelationRequest.requester.acct}
           </div>
@@ -35,7 +35,7 @@ export const NotificationKTagAddRelationRequestApproved: React.FC<{
         iconId='reply'
         accountIds={notification.sampleAccountIds}
         count={notification.notifications_count}
-        statusId={notification.status_id}
+        statusId={notification.statusId}
         labelRenderer={
             mentionLabelRenderer
         }

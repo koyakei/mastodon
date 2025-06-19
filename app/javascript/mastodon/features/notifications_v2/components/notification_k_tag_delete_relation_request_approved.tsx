@@ -1,5 +1,6 @@
 import { FormattedMessage } from 'react-intl';
 
+import { createAccountFromServerJSON } from '@/mastodon/models/account';
 import ReplyIcon from '@/material-icons/400-24px/reply-fill.svg?react';
 import { Avatar } from 'mastodon/components/avatar';
 import type { NotificationGroupKTagDeleteRelationRequestApproved } from 'mastodon/models/notification_group';
@@ -15,14 +16,14 @@ export const NotificationKTagDeleteRelationRequestApproved: React.FC<{
   notification: NotificationGroupKTagDeleteRelationRequestApproved;
   unread: boolean;
 }> = ({ notification, unread }) => {
-  const request = notification.k_tag_delete_relation_request
+  const request = notification.kTagDeleteRelationRequest
   return (
     <div>
         <div>
           <div>
             {request.k_tag.name}
             <div className='account__avatar-wrapper'>
-              <Avatar withLink account={request.requester as Account} size={36} />
+              <Avatar withLink account={createAccountFromServerJSON(request.requester)} size={36} />
             </div>
             {request.requester.acct}
           </div>

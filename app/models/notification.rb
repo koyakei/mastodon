@@ -106,7 +106,7 @@ class Notification < ApplicationRecord
     poll: [poll: :status],
     update: :status,
     'admin.report': [report: :target_account],
-    k_tag_add_relation_request: :status
+    k_tag_add_relation_request: :status,
   }.freeze
 
   belongs_to :account, optional: true
@@ -124,9 +124,9 @@ class Notification < ApplicationRecord
     belongs_to :account_relationship_severance_event, inverse_of: false
     belongs_to :account_warning, inverse_of: false
     belongs_to :generated_annual_report, inverse_of: false
-    belongs_to :k_tag_relation, inverse_of: :notification ## tagged notification
-    belongs_to :k_tag_add_relation_request, inverse_of: :notification # requested approved denied
-    belongs_to :k_tag_delete_relation_request, inverse_of: :notification
+    belongs_to :k_tag_relation, inverse_of: :notification
+    belongs_to :k_tag_add_relation_request, inverse_of: :notifications
+    belongs_to :k_tag_delete_relation_request, inverse_of: :notifications
   end
 
   validates :type, inclusion: { in: TYPES }
@@ -134,7 +134,7 @@ class Notification < ApplicationRecord
   scope :without_suspended, -> { joins(:from_account).merge(Account.without_suspended) }
 
   def type
-     (super || LEGACY_TYPE_CLASS_MAP[activity_type]).to_sym
+    (super || LEGACY_TYPE_CLASS_MAP[activity_type]).to_sym
   end
 
   def target_status
@@ -149,18 +149,10 @@ class Notification < ApplicationRecord
       mention&.status
     when :poll
       poll&.status
-    when :k_tag_add_relation_request
-      k_tag_add_relation_request.status
-    when :k_tag_add_relation_request_approved
-      k_tag_add_relation_request.status
-    when :k_tag_add_relation_request_denied
-      k_tag_add_relation_request.status
-    when :k_tag_delete_relation_request
+    when :k_tag_delete_relation_request, :k_tag_delete_relation_request_approved, :k_tag_delete_relation_request_denied
       k_tag_delete_relation_request.status
-    when :k_tag_delete_relation_request_approved
-      k_tag_delete_relation_request.status
-    when :k_tag_delete_relation_request_denied
-      k_tag_delete_relation_request.status
+    when :k_tag_add_relation_request, :k_tag_add_relation_request_approved, :k_tag_add_relation_request_denied
+      k_tag_add_relation_request.status
     end
   end
 
@@ -171,22 +163,16 @@ class Notification < ApplicationRecord
                         else
                           types.map(&:to_sym) & TYPES
                         end
-      Rails.logger.debug "exclude_types2 #{exclude_types}"
-      Rails.logger.debug "requested_types2 #{requested_types}"
       requested_types -= exclude_types.map(&:to_sym)
-      Rails.logger.debug "afdddsdf #{requested_types}"
       all.tap do |scope|
         scope.merge!(where(filtered: false)) unless include_filtered || from_account_id.present?
         scope.merge!(where(from_account_id: from_account_id)) if from_account_id.present?
-        Rails.logger.debug "afsdafs #{requested_types}"
-        Rails.logger.debug "afsdafdassdffs #{where(type: requested_types)}"
         scope.merge!(where(type: requested_types)) unless requested_types.size == TYPES.size
       end
     end
 
     def preload_cache_collection_target_statuses(notifications, &_block)
       notifications.group_by(&:type).each do |type, grouped_notifications|
-
         associations = TARGET_STATUS_INCLUDES_BY_TYPE[type]
         # Rails.logger.debug("safsfasafdsfda #{associations} #{type} #{grouped_notifications}")
         next unless associations
@@ -243,17 +229,17 @@ class Notification < ApplicationRecord
     when 'KTagRelation'
       self.from_account_id = activity&.k_tag_relation&.account_id
     when 'KTagAddRelationRequest' ## これが通知のアイコンになる　リクエストと決定の両方向でリクエスたーが表示されるのはなんか嫌だけどとりあえずこれでいく
-      if [:k_tag_add_relation_request_approved, :k_tag_add_relation_request_denied].include?(type.to_sym)
-        self.from_account_id = activity&.target_account&.id
-      else
-        self.from_account_id = activity&.requester&.id
-      end
+      self.from_account_id = if [:k_tag_add_relation_request_approved, :k_tag_add_relation_request_denied].include?(type.to_sym)
+                               activity&.target_account&.id
+                             else
+                               activity&.requester&.id
+                             end
     when 'KTagDeleteRelationRequest'
-      if [:k_tag_delete_relation_request_approved, :k_tag_delete_relation_request_denied].include?(type.to_sym)
-        self.from_account_id = activity&.target_account&.id
-      else
-        self.from_account_id = activity&.requester&.id
-      end
+      self.from_account_id = if [:k_tag_delete_relation_request_approved, :k_tag_delete_relation_request_denied].include?(type.to_sym)
+                               activity&.target_account&.id
+                             else
+                               activity&.requester&.id
+                             end
     when 'AccountRelationshipSeveranceEvent', 'AccountWarning', 'GeneratedAnnualReport'
 
       # These do not really have an originating account, but this is mandatory

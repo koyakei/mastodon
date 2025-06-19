@@ -32,32 +32,32 @@ interface BaseNotificationWithStatus<Type extends NotificationWithStatusType>
 
 interface BaseNotificationKTagAddRelationRequestWithStatus
   extends BaseNotificationWithStatus<'k_tag_add_relation_request'>{
-  kTagAddRelationRequest: ApiKTagAddRelationRequestJSON[];
+  k_tag_add_relation_request: ApiKTagAddRelationRequestJSON;
 }
 
 interface BaseNotificationKTagAddRelationRequestApprovedWithStatus
   extends BaseNotificationWithStatus<'k_tag_add_relation_request_approved'>{
-  kTagAddRelationRequest: ApiKTagAddRelationRequestJSON[];
+  k_tag_add_relation_request: ApiKTagAddRelationRequestJSON;
 }
 
 interface BaseNotificationKTagAddRelationRequestDeniedWithStatus
   extends BaseNotificationWithStatus<'k_tag_add_relation_request_denied'>{
-  kTagAddRelationRequest: ApiKTagAddRelationRequestJSON[];
+  k_tag_add_relation_request: ApiKTagAddRelationRequestJSON;
 }
 
 interface BaseNotificationKTagDeleteRelationRequestWithStatus
   extends BaseNotificationWithStatus<'k_tag_delete_relation_request'>{
-  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON[];
+  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON;
 }
 
 interface BaseNotificationKTagDeleteRelationRequestApprovedWithStatus
   extends BaseNotificationWithStatus<'k_tag_delete_relation_request_approved'>{
-  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON[];
+  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON;
 }
 
 interface BaseNotificationKTagDeleteRelationRequestDeniedWithStatus
   extends BaseNotificationWithStatus<'k_tag_delete_relation_request_denied'>{
-  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON[];
+  kTagDeleteRelationRequest: ApiKTagDeleteRelationRequestJSON;
 }
 
 interface BaseNotification<Type extends NotificationType>
