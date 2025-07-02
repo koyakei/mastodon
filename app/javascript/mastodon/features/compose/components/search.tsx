@@ -229,6 +229,8 @@ export const Search: React.FC<{
         history.push(`/@${search.q}`);
       } else if (search.type === 'hashtag') {
         history.push(`/tags/${search.q}`);
+      }else if (search.type === 'k_tag') {
+        history.push(`/k_tags/${search.q}`);
       } else {
         const queryParams = new URLSearchParams({ q: search.q });
         if (search.type) queryParams.set('type', search.type);

@@ -1,7 +1,7 @@
 import type { ApiSearchResultsJSON } from 'mastodon/api_types/search';
 import type { ApiHashtagJSON } from 'mastodon/api_types/tags';
 
-export type SearchType = 'account' | 'hashtag' | 'accounts' | 'statuses';
+export type SearchType = 'account' | 'hashtag' | 'accounts' | 'statuses' | 'k_tag';
 
 export interface RecentSearch {
   q: string;
