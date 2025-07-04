@@ -13,10 +13,9 @@ import type { KTag } from '../features/search/search_by_k_tag';
 
 export const KTagSearch = () => {
   const dispatch = useDispatch();
-  // const suggestions: Tag[] = useAppSelector((state: RootState) => selectAllSuggestions(state) as Tag[]);
-  // const selectedTags: Tag[] = useAppSelector((state: RootState) => selectAllSelected(state) as Tag[]);
-  const selectedTags: Tag[] = []
-  const suggestions: Tag[] = []
+  const suggestions: Tag[] = useAppSelector((state: RootState) => selectAllSuggestions(state) as Tag[]);
+  const selectedTags: Tag[] = useAppSelector((state: RootState) => selectAllSelected(state) as Tag[]);
+
   const onAdd = useCallback(
     (tag: Tag) => {
       dispatch(addKTag(tag as KTag));

@@ -4,8 +4,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { Tag } from "react-tag-autocomplete";
 
 import { kTagsApiSlice } from "mastodon/api/k_tags";
-
-import type { KTag } from "../features/search/search_by_k_tag";
+import type { KTag } from "mastodon/features/search/search_by_k_tag";
 import type { RootState } from "../store";
 
 interface KTagSearchState {
@@ -39,7 +38,6 @@ const kTagSearchSlice = createSlice({
         kTagsApiSlice.endpoints.fetchKTagsByText.matchFulfilled,
         (state, action) => {
           const kTags = action.payload;
-          // Assuming payload is an array of KTag, update suggestions accordingly
           kTags.forEach((kTag: KTag) => {
             if (!state.suggestions.some(existingKTag => existingKTag.id === kTag.id)) {
               state.suggestions.push(kTag);

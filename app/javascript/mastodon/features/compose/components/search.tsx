@@ -1,4 +1,5 @@
-import React,{ useCallback, useState, useRef } from 'react';
+import type React from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 
 import {
   defineMessages,
@@ -8,12 +9,16 @@ import {
 } from 'react-intl';
 
 import classNames from 'classnames';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 
 import { isFulfilled } from '@reduxjs/toolkit';
+import { useDispatch, useSelector } from 'react-redux';
 
+import { setItemsFromQuery, addItem, removeItem, clearItems } from 'mastodon/slices/querySlice';
+import { useForm } from 'react-hook-form'
 import ReactTagAutocomplete from 'react-tag-autocomplete'
 
+import { KTagSearch } from '@/mastodon/components/k_tag_search';
 import CancelIcon from '@/material-icons/400-24px/cancel-fill.svg?react';
 import CloseIcon from '@/material-icons/400-24px/close.svg?react';
 import SearchIcon from '@/material-icons/400-24px/search.svg?react';
@@ -28,6 +33,8 @@ import { domain, searchEnabled } from 'mastodon/initial_state';
 import type { RecentSearch, SearchType } from 'mastodon/models/search';
 import { useAppSelector, useAppDispatch } from 'mastodon/store';
 import { HASHTAG_REGEX } from 'mastodon/utils/hashtags';
+
+import { KTag, fetchKTagsByIds} from 'mastodon/features/search/search_by_k_tag';
 
 const messages = defineMessages({
   placeholder: { id: 'search.placeholder', defaultMessage: 'Search' },
@@ -521,6 +528,7 @@ export const Search: React.FC<{
 
   return (
     <form className={classNames('search', { active: expanded })}>
+      <KTagSearch />
       <ReactTagAutocomplete
         labelText="Select countries"
         tags={selected}

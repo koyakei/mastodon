@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+import type { KTag } from "mastodon/features/search/search_by_k_tag";
+
 import type { ApiKTagJSON } from "../api_types/k_tags";
-import type { KTag } from "../features/search/search_by_k_tag";
 
 export type { ApiKTagJSON };
 
@@ -16,13 +17,20 @@ export const kTagsApiSlice = createApi({
         params: { ids } // { ids: [1, 2, 3] } のようにオブジェクトで渡す
       }),
     }),
-    fetchKTagsByText: builder.query<ApiKTagJSON[], string>({
+    fetchKTagsByText: builder.query<KTag[], string>({
       query: (text) => ({
         url: "/search",
         method: "GET",
         params: { q: text, type: "k_tags" },
       }),
-      transformResponse: (response: { k_tags: ApiKTagJSON[] }) => response.k_tags,
+      transformResponse: (response: { k_tags: ApiKTagJSON[] })  => {
+        const k_tagarray : KTag[] = response.k_tags.map((kTag) => ({
+          id: kTag.id, // Convert string ID to number
+          name: kTag.name,
+          isOwned: false, // Assuming isOwned is false by default, adjust as needed
+        }));
+        return k_tagarray;
+      }
     }),
   }),
 });
