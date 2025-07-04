@@ -1,5 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
 
+import { kTagsApiSlice } from 'mastodon/api/k_tags';
+import { listenerMiddleware } from 'mastodon/listenerMiddleware'
+
 import { rootReducer } from '../reducers';
 
 import { errorsMiddleware } from './middlewares/errors';
@@ -24,6 +27,8 @@ export const store = configureStore({
       // But this is not the case, as our Root State is an ImmutableJS map, which is an object
       immutableCheck: false,
     })
+      .prepend(listenerMiddleware.middleware)
+      .concat(kTagsApiSlice.middleware)
       .concat(
         loadingBarMiddleware({
           promiseTypeSuffixes: ['REQUEST', 'SUCCESS', 'FAIL'],
