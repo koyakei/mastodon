@@ -2,7 +2,7 @@ class KTagsController < ApplicationController
   include Authorization
 
   before_action :authenticate_user!
-  before_action :set_k_tag, only: %i[ show edit update destroy ]
+  before_action :set_k_tag, only: %i(show edit update destroy)
   # before_action :check_statuses_limit, only: [:index]
 
   # This API was originally unlimited, pagination cannot be introduced without
@@ -11,28 +11,30 @@ class KTagsController < ApplicationController
   # than this anyway
   CONTEXT_LIMIT = 4_096
 
-
   # GET /k_tags
   def index
-  #   @notifications = Notification.all
-  #   # render json: @notifications, each_serializer: REST::NotificationSerializer
-  # # 各通知をデバッグログに出力
-  # @notifications.each do |notification|
-  #   # Rails.logger.debug REST::KTagAddRelationRequestSerializer.new(notification.k_tag_add_relation_request).as_json
-  #   # Rails.logger.debug notification.k_tag_add_relation_request
-  #   Rails.logger.debug "fdasdfsf"
-  #   Rails.logger.debug notification
-  # end
-  @statuses = KTag.all
-# @statuses.each do |status|
-#   Rails.logger
-# end
- render json: @statuses, each_serializer: REST::KTagSerializer
+    #   @notifications = Notification.all
+    #   # render json: @notifications, each_serializer: REST::NotificationSerializer
+    # # 各通知をデバッグログに出力
+    # @notifications.each do |notification|
+    #   # Rails.logger.debug REST::KTagAddRelationRequestSerializer.new(notification.k_tag_add_relation_request).as_json
+    #   # Rails.logger.debug notification.k_tag_add_relation_request
+    #   Rails.logger.debug "fdasdfsf"
+    #   Rails.logger.debug notification
+    # end
+    @statuses = if k_tag_ids.any?
+                  KTag.where(id: k_tag_ids)
+                else
+                  KTag.all
+                end
+    # @statuses.each do |status|
+    #   Rails.logger
+    # end
+    render json: @statuses, each_serializer: REST::KTagSerializer
     # @notification.not_reviewed!
     # @k_tag_add_relation_request.update(request_status: :approved, review_comment: params[:review_comment] || "")
-  # render json: @notifications[].k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
-  # render json: @notifications[1], serializer: REST::NotificationSerializer
-
+    # render json: @notifications[].k_tag_add_relation_request, serializer: REST::KTagAddRelationRequestForUserSerializer
+    # render json: @notifications[1], serializer: REST::NotificationSerializer
 
     # @k_tags = KTag.all
   end
@@ -56,7 +58,7 @@ class KTagsController < ApplicationController
     @k_tag = KTag.new(k_tag_params)
     @k_tag.account = current_user&.account
     if @k_tag.save
-      redirect_to @k_tag, notice: "K tag was successfully created."
+      redirect_to @k_tag, notice: 'K tag was successfully created.'
     else
       render :new, status: :unprocessable_entity
     end
@@ -66,7 +68,7 @@ class KTagsController < ApplicationController
   def update
     authorize @k_tag, :update?
     if @k_tag.update(k_tag_params)
-      redirect_to @k_tag, notice: "K tag was successfully updated.", status: :see_other
+      redirect_to @k_tag, notice: 'K tag was successfully updated.', status: 303
     else
       render :edit, status: :unprocessable_entity
     end
@@ -76,23 +78,26 @@ class KTagsController < ApplicationController
   def destroy
     authorize @k_tag, :destroy?
     @k_tag.destroy!
-    redirect_to k_tags_url, notice: "K tag was successfully destroyed.", status: :see_other
+    redirect_to k_tags_url, notice: 'K tag was successfully destroyed.', status: 303
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_k_tag
-      @k_tag = KTag.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def k_tag_params
-      params.require(:k_tag).permit(:name, :description)
-    end
-    def check_statuses_limit
-      raise(Mastodon::ValidationError) if k_tag_ids.size > DEFAULT_STATUSES_LIMIT
-    end
-    def k_tag_ids
-      Array(k_tag_params[:ids]).uniq.map(&:to_i)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_k_tag
+    @k_tag = KTag.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def k_tag_params
+    params.require(:k_tag).permit(:name, :description)
+  end
+
+  def check_statuses_limit
+    raise(Mastodon::ValidationError) if k_tag_ids.size > DEFAULT_STATUSES_LIMIT
+  end
+
+  def k_tag_ids
+    Array(k_tag_params[:ids]).uniq.map(&:to_i)
+  end
 end

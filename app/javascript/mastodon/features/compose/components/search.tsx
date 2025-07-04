@@ -1,4 +1,5 @@
-import React,{ useCallback, useState, useRef } from 'react';
+import type React from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 
 import {
   defineMessages,
@@ -8,12 +9,17 @@ import {
 } from 'react-intl';
 
 import classNames from 'classnames';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 
 import { isFulfilled } from '@reduxjs/toolkit';
+import { useDispatch, useSelector } from 'react-redux';
 
+import { setItemsFromQuery, addItem, removeItem, clearItems } from 'mastodon/slices/querySlice';
+import qs from 'qs'
+import { useForm } from 'react-hook-form'
 import ReactTagAutocomplete from 'react-tag-autocomplete'
 
+import { KTagSearch } from '@/mastodon/components/k_tag_search';
 import CancelIcon from '@/material-icons/400-24px/cancel-fill.svg?react';
 import CloseIcon from '@/material-icons/400-24px/close.svg?react';
 import SearchIcon from '@/material-icons/400-24px/search.svg?react';
@@ -28,6 +34,19 @@ import { domain, searchEnabled } from 'mastodon/initial_state';
 import type { RecentSearch, SearchType } from 'mastodon/models/search';
 import { useAppSelector, useAppDispatch } from 'mastodon/store';
 import { HASHTAG_REGEX } from 'mastodon/utils/hashtags';
+import { parseArrayFromQuery, arrayToQueryString } from 'mastodon/utils/queryParser';
+import { g } from 'vitest/dist/chunks/suite.d.FvehnV49.js';
+import { KTag, fetchKTagsByIds} from 'mastodon/features/search/search_by_k_tag';
+
+
+
+function getItemsFromQuery(): string[] {
+  const location = useLocation()
+  const params = new URLSearchParams(location.search);
+  const itemsParam = params.getAll('ktagids[]');
+  return itemsParam ? itemsParam : [];
+}
+
 
 const messages = defineMessages({
   placeholder: { id: 'search.placeholder', defaultMessage: 'Search' },
@@ -59,6 +78,52 @@ interface SearchOption {
   forget?: (e: React.MouseEvent | React.KeyboardEvent) => void;
 }
 
+const updateUrlWithItems = (items: string[]): void => {
+  // 現在のクエリパラメータを取得
+  const params = new URLSearchParams(window.location.search);
+
+  // 既存のktagids[]値を取得
+  const existing = params.getAll("ktagids[]");
+  const existingSet = new Set(existing);
+
+  // 追加対象のitemsから、既存にないものだけ抽出
+  const newItems = items.filter(item => !existingSet.has(item));
+
+  // 既存＋新規を重複なく統合
+  const mergedItems = Array.from(new Set([...existing, ...newItems]));
+
+  // クエリを再構築
+  const newParams = new URLSearchParams();
+  mergedItems.forEach(item => newParams.append("ktagids[]", item));
+
+  // 他のクエリパラメータも残したい場合
+  for (const [key, value] of params.entries()) {
+    if (key !== "ktagids[]") {
+      newParams.append(key, value);
+    }
+  }
+
+  // URLを更新
+  const baseUrl = window.location.pathname;
+  const queryString = newParams.toString();
+  window.history.replaceState({}, '', queryString ? `${baseUrl}?${queryString}` : baseUrl);
+};
+
+
+const hasDuplicateInParams = (
+  params: URLSearchParams,
+  items: string[],
+  key: string
+): boolean  => {
+  // params内の既存値を取得（複数同名キーに対応）
+  const existing = params.getAll(key);
+  // Setで高速検索
+  const existingSet = new Set(existing);
+
+  // itemsの中に既存と重複するものがあるか
+  return items.some(item => existingSet.has(item));
+}
+
 export const Search: React.FC<{
   singleColumn: boolean;
   initialValue?: string;
@@ -75,6 +140,14 @@ export const Search: React.FC<{
   const [selectedOption, setSelectedOption] = useState(-1);
   const [quickActions, setQuickActions] = useState<SearchOption[]>([]);
   const searchOptions: SearchOption[] = [];
+  const [kTagIds, setKTagIds] = useState<string[]>(getItemsFromQuery());
+
+  useEffect(() => {
+    // kTagIdsが空配列の場合はAPI呼び出ししない等、必要ならガードも
+    if (kTagIds && kTagIds.length > 0) {
+      dispatch(fetchKTagsByIds(kTagIds));
+    }
+  }, [dispatch, kTagIds]);
 
   if (searchEnabled) {
     searchOptions.push(
@@ -488,11 +561,21 @@ export const Search: React.FC<{
   const [suggestions, setSuggestions] = useState([
   ])
 
+  const searchingKTag = useAppSelector(state => state.searchKTag);
 
   const onAdd = useCallback(
     (newTag) => {
       setSelected([...selected, newTag])
       insertText('ktagid:' + newTag.id)
+      updateUrlWithItems([newTag.id])
+      useEffect(() => {
+        const queryString = arrayToQueryString('k_tag_ids', selected.map((tag) => tag.id));
+        const newUrl = queryString
+          ? `${window.location.pathname}?${queryString}`
+          : window.location.pathname;
+        // URLを更新（ページリロードなし）
+        window.history.replaceState({}, '', newUrl);
+      }, [kTagIds]);
     },
     [selected]
   )
@@ -521,6 +604,7 @@ export const Search: React.FC<{
 
   return (
     <form className={classNames('search', { active: expanded })}>
+
       <ReactTagAutocomplete
         labelText="Select countries"
         tags={selected}

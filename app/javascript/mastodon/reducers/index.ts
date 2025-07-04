@@ -3,6 +3,9 @@ import { Record as ImmutableRecord } from 'immutable';
 import { loadingBarReducer } from 'react-redux-loading-bar';
 import { combineReducers } from 'redux-immutable';
 
+import { kTagsApiSlice } from 'mastodon/api/k_tags';
+import kTagSearchSliceReducer from 'mastodon/slices/k_tag_search_slice';
+
 import { accountsReducer } from './accounts';
 import { accountsFamiliarFollowersReducer } from './accounts_familiar_followers';
 import { accountsMapReducer } from './accounts_map';
@@ -76,6 +79,8 @@ const reducers = {
   history,
   notificationPolicy: notificationPolicyReducer,
   notificationRequests: notificationRequestsReducer,
+  kTagSearchSliceReducer: kTagSearchSliceReducer,
+  [kTagsApiSlice.reducerPath]: kTagsApiSlice.reducer,
 };
 
 // We want the root state to be an ImmutableRecord, which is an object with a defined list of keys,
