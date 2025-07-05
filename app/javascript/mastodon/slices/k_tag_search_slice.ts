@@ -1,10 +1,9 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 
-import { Tag } from "react-tag-autocomplete";
-
 import { kTagsApiSlice } from "mastodon/api/k_tags";
 import type { KTag } from "mastodon/features/search/search_by_k_tag";
+
 import type { RootState } from "../store";
 
 interface KTagSearchState {
