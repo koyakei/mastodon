@@ -5,11 +5,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import ReactTags from 'react-tag-autocomplete';
 import type { Tag } from 'react-tag-autocomplete/index';
 
+import type { KTag } from 'mastodon/features/search/search_by_k_tag';
 import {addKTag, removeKTag, selectAllSuggestions, selectAllSelected} from 'mastodon/slices/k_tag_search_slice';
-import { useAppSelector, type RootState } from 'mastodon/store';
+import { useAppSelector  } from 'mastodon/store';
+import type {RootState} from 'mastodon/store';
 
-import { useLazyFetchKTagsByTextQuery } from '../api/k_tags';
-import type { KTag } from '../features/search/search_by_k_tag';
+import { useLazyFetchKTagsByTextQuery } from 'mastodon/api/k_tags';
 
 export const KTagSearch = () => {
   const dispatch = useDispatch();

@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setItemsFromQuery, addItem, removeItem, clearItems } from 'mastodon/slices/querySlice';
 import { useForm } from 'react-hook-form'
 import ReactTagAutocomplete from 'react-tag-autocomplete'
+import type { Tag } from 'react-tag-autocomplete/index';
 
 import { KTagSearch } from '@/mastodon/components/k_tag_search';
 import CancelIcon from '@/material-icons/400-24px/cancel-fill.svg?react';
@@ -32,9 +33,13 @@ import { useIdentity } from 'mastodon/identity_context';
 import { domain, searchEnabled } from 'mastodon/initial_state';
 import type { RecentSearch, SearchType } from 'mastodon/models/search';
 import { useAppSelector, useAppDispatch } from 'mastodon/store';
+import type {RootState} from 'mastodon/store';
 import { HASHTAG_REGEX } from 'mastodon/utils/hashtags';
 
-import { KTag, fetchKTagsByIds} from 'mastodon/features/search/search_by_k_tag';
+import { useLazyFetchKTagsByTextQuery } from 'mastodon/api/k_tags';
+import type { KTag } from 'mastodon/features/search/search_by_k_tag';
+
+import {addKTag, removeKTag, selectAllSuggestions, selectAllSelected} from 'mastodon/slices/k_tag_search_slice';
 
 const messages = defineMessages({
   placeholder: { id: 'search.placeholder', defaultMessage: 'Search' },
@@ -82,6 +87,8 @@ export const Search: React.FC<{
   const [selectedOption, setSelectedOption] = useState(-1);
   const [quickActions, setQuickActions] = useState<SearchOption[]>([]);
   const searchOptions: SearchOption[] = [];
+  const suggestions: Tag[] = useAppSelector((state: RootState) => selectAllSuggestions(state) as Tag[]);
+  const selectedTags: Tag[] = useAppSelector((state: RootState) => selectAllSelected(state) as Tag[]);
 
   if (searchEnabled) {
     searchOptions.push(
@@ -489,54 +496,42 @@ export const Search: React.FC<{
   }, [setExpanded, setSelectedOption]);
 
 
-  const [selected, setSelected] = useState([
-  ]);
-  // const [value, setValue] = useState('')
-  const [suggestions, setSuggestions] = useState([
-  ])
-
-
   const onAdd = useCallback(
-    (newTag) => {
-      setSelected([...selected, newTag])
-      insertText('ktagid:' + newTag.id)
-    },
-    [selected]
-  )
+      (tag: Tag) => {
+        dispatch(addKTag(tag as KTag));
+        insertText('ktagid:' + tag.id.toString());
+      },
+      [dispatch]
+    );
 
   const onDelete = useCallback(
-    (tagIndex: number) => {
-      setSelected(selected.filter((_, i) => i !== tagIndex))
-    },
-    [selected]
-  )
+      (index: number) => {
+        const tag = selectedTags[index];
+        if (tag && typeof tag.id === 'number') {
+          dispatch(removeKTag(tag.id));
+        }
+      },
+      [dispatch, selectedTags]
+    );
+  const [trigger, { data, error, isLoading }] = useLazyFetchKTagsByTextQuery();
 
-  const fetchSuggestions = useCallback(
-    async (query) => {
-      try {
-        const response = await fetch(`/api/v2/search?q=${encodeURIComponent(query)}&type=k_tags`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        setSuggestions(data.k_tags);
-      } catch (error) {
-        console.error('検索エラー:', error);
-        setError('サジェストの取得に失敗しました');
-      }
-    },
-    [] // 依存配列は必要に応じて追加してください
-  );
+  const onInput = useCallback(
+      (value: string) => {
+        void trigger(value);
+      },
+      [trigger]
+    );
 
   return (
     <form className={classNames('search', { active: expanded })}>
-      <KTagSearch />
       <ReactTagAutocomplete
-        labelText="Select countries"
-        tags={selected}
+        tags={selectedTags}
         suggestions={suggestions}
         onAddition={onAdd}
         onDelete={onDelete}
-        onInput={fetchSuggestions}
-        noOptionsText="No matching countries" />
+        onInput={onInput}
+        placeholderText={ "タグを入力"}
+      />
 
       <input
         ref={searchInputRef}
