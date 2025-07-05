@@ -8,18 +8,27 @@ export type { ApiKTagJSON };
 
 export const kTagsApiSlice = createApi({
   reducerPath: "kTagsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api/v2" }),
+  baseQuery: fetchBaseQuery({ baseUrl: "" }),
   endpoints: (builder) => ({
-    getKTag: builder.query<KTag,  number[] | string[]>({
+    getKTag: builder.query<KTag[],  number[] | string[]>({
       // The URL for the request is '/fakeApi/posts'
       query: ids => ({
         url: '/k_tags',
-        params: { ids } // { ids: [1, 2, 3] } のようにオブジェクトで渡す
+        params: { 'ids[]': ids }
       }),
+      transformResponse: (response: ApiKTagJSON[] )  => {
+        return response.map((kTag) => (
+          {
+          id: kTag.id, // Convert string ID to number
+          name: kTag.name,
+          isOwned: false, // Assuming isOwned is false by default, adjust as needed
+        }
+      ));
+      }
     }),
     fetchKTagsByText: builder.query<KTag[], string>({
       query: (text) => ({
-        url: "/search",
+        url: "/api/v2/search",
         method: "GET",
         params: { q: text, type: "k_tags" },
       }),
@@ -35,4 +44,4 @@ export const kTagsApiSlice = createApi({
   }),
 });
 
-export const { useFetchKTagsByTextQuery, useGetKTagQuery,useLazyFetchKTagsByTextQuery } = kTagsApiSlice;
+export const { useFetchKTagsByTextQuery, useGetKTagQuery, useLazyFetchKTagsByTextQuery } = kTagsApiSlice;

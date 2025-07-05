@@ -5,12 +5,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import ReactTags from 'react-tag-autocomplete';
 import type { Tag } from 'react-tag-autocomplete/index';
 
+import { useLazyFetchKTagsByTextQuery } from 'mastodon/api/k_tags';
 import type { KTag } from 'mastodon/features/search/search_by_k_tag';
 import {addKTag, removeKTag, selectAllSuggestions, selectAllSelected} from 'mastodon/slices/k_tag_search_slice';
 import { useAppSelector  } from 'mastodon/store';
 import type {RootState} from 'mastodon/store';
 
-import { useLazyFetchKTagsByTextQuery } from 'mastodon/api/k_tags';
 
 export const KTagSearch = () => {
   const dispatch = useDispatch();
@@ -50,7 +50,7 @@ export const KTagSearch = () => {
       onAddition={onAdd}
       onDelete={onDelete}
       onInput={onInput}
-      placeholderText={data?.[0]?.name ?? "タグを入力"}
+      placeholderText={ "タグを入力"}
     />
   );
 

@@ -43,9 +43,20 @@ const kTagSearchSlice = createSlice({
             }
           });
         }
+      ).addMatcher(
+        kTagsApiSlice.endpoints.getKTag.matchFulfilled,
+        (state, action) => {
+          const kTags = action.payload;
+          kTags.forEach((kTag: KTag) => {
+            if (!state.suggestions.some(existingKTag => existingKTag.id === kTag.id)) {
+              state.selectedKTags.push(kTag);
+            }
+          });
+        }
       );
     },
-});
+  },
+);
 
 export const { setSelectedKTags, addKTag, removeKTag } = kTagSearchSlice.actions;
 

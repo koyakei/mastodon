@@ -36,7 +36,7 @@ import { useAppSelector, useAppDispatch } from 'mastodon/store';
 import type {RootState} from 'mastodon/store';
 import { HASHTAG_REGEX } from 'mastodon/utils/hashtags';
 
-import { useLazyFetchKTagsByTextQuery } from 'mastodon/api/k_tags';
+import { useLazyFetchKTagsByTextQuery , useGetKTagQuery} from 'mastodon/api/k_tags';
 import type { KTag } from 'mastodon/features/search/search_by_k_tag';
 
 import {addKTag, removeKTag, selectAllSuggestions, selectAllSelected} from 'mastodon/slices/k_tag_search_slice';
@@ -90,6 +90,7 @@ export const Search: React.FC<{
   const suggestions: Tag[] = useAppSelector((state: RootState) => selectAllSuggestions(state) as Tag[]);
   const selectedTags: Tag[] = useAppSelector((state: RootState) => selectAllSelected(state) as Tag[]);
 
+  useGetKTagQuery([1, 2, 3]);
   if (searchEnabled) {
     searchOptions.push(
       {
