@@ -40,6 +40,8 @@ import { useLazyFetchKTagsByTextQuery , useGetKTagQuery} from 'mastodon/api/k_ta
 import type { KTag } from 'mastodon/features/search/search_by_k_tag';
 
 import {addKTag, removeKTag, selectAllSuggestions, selectAllSelected} from 'mastodon/slices/k_tag_search_slice';
+import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
+import qs from 'qs';
 
 const messages = defineMessages({
   placeholder: { id: 'search.placeholder', defaultMessage: 'Search' },
@@ -90,7 +92,23 @@ export const Search: React.FC<{
   const suggestions: Tag[] = useAppSelector((state: RootState) => selectAllSuggestions(state) as Tag[]);
   const selectedTags: Tag[] = useAppSelector((state: RootState) => selectAllSelected(state) as Tag[]);
 
-  useGetKTagQuery([1, 2, 3]);
+  const useQueryParams = (): Record<string, string> => {
+    const { search } = useLocation();
+    return qs.parse(search) as Record<string, string>;
+  };
+
+  const queryParams = useQueryParams();
+  const { k_tag_ids } = queryParams;
+
+  // Always call the hook unconditionally
+  const numberIds = k_tag_ids
+    ? (Array.isArray(k_tag_ids) ? k_tag_ids : [k_tag_ids])
+        .map(id => Number(id))
+        .filter(id => !isNaN(id))
+    : [];
+  useGetKTagQuery(numberIds);
+
+
   if (searchEnabled) {
     searchOptions.push(
       {

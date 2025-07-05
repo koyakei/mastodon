@@ -1,20 +1,29 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import qs from 'qs';
 
 import type { KTag } from "mastodon/features/search/search_by_k_tag";
 
 import type { ApiKTagJSON } from "../api_types/k_tags";
 
+
 export type { ApiKTagJSON };
 
 export const kTagsApiSlice = createApi({
   reducerPath: "kTagsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "" }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: "",
+    paramsSerializer: params => {
+      return qs.stringify(params, {
+        arrayFormat: 'brackets',
+      });
+    },
+  }),
   endpoints: (builder) => ({
     getKTag: builder.query<KTag[],  number[] | string[]>({
       // The URL for the request is '/fakeApi/posts'
       query: ids => ({
         url: '/k_tags',
-        params: { 'ids[]': ids }
+        params: { 'ids': ids }
       }),
       transformResponse: (response: ApiKTagJSON[] )  => {
         return response.map((kTag) => (
