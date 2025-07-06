@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useCallback, useState, useRef} from 'react';
 
 import {
   defineMessages,
@@ -293,15 +293,10 @@ export const Search: React.FC<{
   };
 
   const submit = useCallback(
-    (q: string, type?: SearchType, k_tag_ids?: [number]) => {
-      void dispatch(clickSearchResult({ q, type, k_tag_ids }));
+    (q: string, type?: SearchType) => {
+      void dispatch(clickSearchResult({ q, type }));
       const queryParams = new URLSearchParams({ q });
       if (type) queryParams.set('type', type);
-      if (k_tag_ids) {
-        k_tag_ids.forEach((id) => {
-          queryParams.append("k_tag_ids", id);
-        });
-      }
       history.push({ pathname: '/search', search: queryParams.toString() });
       unfocus();
     },
@@ -363,7 +358,7 @@ export const Search: React.FC<{
             action: () => {
               const query = trimmedValue.replace(/^#/, '');
               history.push(`/tags/${query}`);
-              void dispatch(clickSearchResult({ q: query, type: 'statuses', k_tag_ids: [query] }));
+              void dispatch(clickSearchResult({ q: query, type: 'statuses' }));
               unfocus();
             },
           });

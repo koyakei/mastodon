@@ -103,7 +103,7 @@ export const openURL = createDataLoadingThunk(
 export const clickSearchResult = createAppAsyncThunk(
   'search/clickResult',
   (
-    { q, type ,k_tag_ids}: { q: string; type?: RecentSearchType, k_tag_ids?: [number] },
+    { q, type }: { q: string; type?: RecentSearchType },
     { dispatch, getState },
   ) => {
     const previous = getState().search.recent;
@@ -113,7 +113,7 @@ export const clickSearchResult = createAppAsyncThunk(
     }
 
     const me = getState().meta.get('me') as string;
-    const current = [{ type, q, k_tag_ids }, ...previous].slice(0, 4);
+    const current = [{ type, q }, ...previous].slice(0, 4);
 
     searchHistory.set(me, current);
     dispatch(updateSearchHistory(current));

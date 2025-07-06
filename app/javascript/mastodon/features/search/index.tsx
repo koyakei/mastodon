@@ -3,9 +3,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useIntl, defineMessages, FormattedMessage } from 'react-intl';
 
 import { Helmet } from 'react-helmet';
-import { useLocation } from 'react-router-dom';
-
-
 
 import { selectAllSelected } from '@/mastodon/slices/k_tag_search_slice';
 import FindInPageIcon from '@/material-icons/400-24px/find_in_page.svg?react';
