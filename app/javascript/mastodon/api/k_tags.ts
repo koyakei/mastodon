@@ -5,7 +5,6 @@ import type { KTag } from "mastodon/features/search/search_by_k_tag";
 
 import type { ApiKTagJSON } from "../api_types/k_tags";
 
-
 export type { ApiKTagJSON };
 
 export const kTagsApiSlice = createApi({
@@ -25,10 +24,10 @@ export const kTagsApiSlice = createApi({
         url: '/k_tags',
         params: { 'ids': ids }
       }),
-      transformResponse: (response: ApiKTagJSON[] )  => {
+      transformResponse: (response: ApiKTagJSON[] ) :KTag[] => {
         return response.map((kTag) => (
           {
-          id: kTag.id, // Convert string ID to number
+          id: kTag.id as number, // Convert string ID to number
           name: kTag.name,
           isOwned: false, // Assuming isOwned is false by default, adjust as needed
         }
@@ -41,13 +40,12 @@ export const kTagsApiSlice = createApi({
         method: "GET",
         params: { q: text, type: "k_tags" },
       }),
-      transformResponse: (response: { k_tags: ApiKTagJSON[] })  => {
-        const k_tagarray : KTag[] = response.k_tags.map((kTag) => ({
+      transformResponse: (response: { k_tags: ApiKTagJSON[] }) :KTag[] => {
+        return response.k_tags.map((kTag) => ({
           id: kTag.id, // Convert string ID to number
           name: kTag.name,
           isOwned: false, // Assuming isOwned is false by default, adjust as needed
         }));
-        return k_tagarray;
       }
     }),
   }),

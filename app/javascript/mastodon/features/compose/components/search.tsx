@@ -306,7 +306,7 @@ export const Search: React.FC<{
       if (type) queryParams.set('type', type);
       if (k_tag_ids) {
         k_tag_ids.forEach((id) => {
-          queryParams.append("k_tag_ids", id.toString);
+          queryParams.append("k_tag_ids", id);
         });
       }
       history.push({ pathname: '/search', search: queryParams.toString() });
@@ -518,7 +518,6 @@ export const Search: React.FC<{
   const onAdd = useCallback(
       (tag: Tag) => {
         dispatch(addKTag(tag as KTag));
-        insertText('ktagid:' + tag.id.toString());
       },
       [dispatch]
     );
@@ -526,13 +525,13 @@ export const Search: React.FC<{
   const onDelete = useCallback(
       (index: number) => {
         const tag = selectedTags[index];
-        if (tag && typeof tag.id === 'number') {
-          dispatch(removeKTag(tag.id));
+        if (tag) {
+          dispatch(removeKTag(tag.id as number));
         }
       },
       [dispatch, selectedTags]
     );
-  const [trigger, { data, error, isLoading }] = useLazyFetchKTagsByTextQuery();
+  const [trigger] = useLazyFetchKTagsByTextQuery();
 
   const onInput = useCallback(
       (value: string) => {

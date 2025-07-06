@@ -29,7 +29,7 @@ const kTagSearchSlice = createSlice({
       }
     },
     removeKTag: (state, action: PayloadAction<number>) => {
-      state.selectedKTags.splice(action.payload, 1);
+      state.selectedKTags = state.selectedKTags.splice(action.payload, 1);
     },
   },
   extraReducers: builder => {
