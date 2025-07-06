@@ -82,7 +82,8 @@ export const SearchResults: React.FC<{ multiColumn: boolean }> = ({
   const results = useAppSelector((state) => state.search.results);
   const dispatch = useAppDispatch();
   const mappedType = typeFromParam(type);
-  const trimmedValue = (q?.trim() ?? '') + ' ' + kTags.map(kTag => 'ktagid:' + kTag.id.toString()).join(' ');
+  const trimmedValue = (q?.trim() ?? '') + (kTags.length > 0 ?  '+' + kTags.map(kTag => 'ktagid:' + kTag.id.toString()).join('+') : '');
+
   useEffect(() => {
     if (trimmedValue.length > 0) {
       void dispatch(
