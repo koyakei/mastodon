@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
 
 import { useIntl, defineMessages, FormattedMessage } from 'react-intl';
 
 import { Helmet } from 'react-helmet';
+import { useLocation } from 'react-router-dom';
 
+
+
+import { selectAllSelected } from '@/mastodon/slices/k_tag_search_slice';
 import FindInPageIcon from '@/material-icons/400-24px/find_in_page.svg?react';
 import PeopleIcon from '@/material-icons/400-24px/group.svg?react';
 import SearchIcon from '@/material-icons/400-24px/search.svg?react';
@@ -70,25 +73,22 @@ const typeFromParam = (param?: string): SearchType => {
 export const SearchResults: React.FC<{ multiColumn: boolean }> = ({
   multiColumn,
 }) => {
-  const { search } = useLocation();
   const columnRef = useRef<ColumnRef>(null);
   const intl = useIntl();
   const [q] = useSearchParam('q');
   const [type, setType] = useSearchParam('type');
-  const kTagIds = new URLSearchParams(search).getAll('kTagIds[]');
+  const kTags  = useAppSelector(selectAllSelected);
   const isLoading = useAppSelector((state) => state.search.loading);
   const results = useAppSelector((state) => state.search.results);
   const dispatch = useAppDispatch();
   const mappedType = typeFromParam(type);
-  const trimmedValue = q?.trim() ?? '';
-
+  const trimmedValue = (q?.trim() ?? '') + ' ' + kTags.map(kTag => 'ktagid:' + kTag.id.toString()).join(' ');
   useEffect(() => {
     if (trimmedValue.length > 0) {
       void dispatch(
         submitSearch({
           q: trimmedValue,
           type: mappedType === 'all' ? undefined : mappedType,
-          kTagIds: kTagIds.length > 0 ? kTagIds.map(Number) : undefined,
         }),
       );
     }
