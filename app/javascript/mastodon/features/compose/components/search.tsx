@@ -293,9 +293,13 @@ export const Search: React.FC<{
   };
 
   const submit = useCallback(
-    (q: string, type?: SearchType) => {
+    (q: string, type?: SearchType, selectedTags?: Tag[]) => {
       void dispatch(clickSearchResult({ q, type }));
+      const tags = selectedTags ?? [];
       const queryParams = new URLSearchParams({ q });
+      tags.forEach(kTag => {
+        queryParams.append('k_tag_ids', kTag.id.toString());
+      });
       if (type) queryParams.set('type', type);
       history.push({ pathname: '/search', search: queryParams.toString() });
       unfocus();
@@ -304,6 +308,7 @@ export const Search: React.FC<{
   );
 
   const handleChange = useCallback(
+
     ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
       setValue(value);
 
@@ -459,7 +464,7 @@ export const Search: React.FC<{
           e.preventDefault();
 
           if (selectedOption === -1) {
-            submit(value);
+            submit(value, undefined, selectedTags);
           } else if (navigableOptions.length > 0) {
             navigableOptions[selectedOption]?.action(e);
           }
