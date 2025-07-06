@@ -12,14 +12,11 @@ import classNames from 'classnames';
 import { useLocation, useHistory } from 'react-router-dom';
 
 import { isFulfilled } from '@reduxjs/toolkit';
-import { useDispatch, useSelector } from 'react-redux';
 
-import { setItemsFromQuery, addItem, removeItem, clearItems } from 'mastodon/slices/querySlice';
-import { useForm } from 'react-hook-form'
+import qs from 'qs';
 import ReactTagAutocomplete from 'react-tag-autocomplete'
 import type { Tag } from 'react-tag-autocomplete/index';
 
-import { KTagSearch } from '@/mastodon/components/k_tag_search';
 import CancelIcon from '@/material-icons/400-24px/cancel-fill.svg?react';
 import CloseIcon from '@/material-icons/400-24px/close.svg?react';
 import SearchIcon from '@/material-icons/400-24px/search.svg?react';
@@ -28,20 +25,16 @@ import {
   forgetSearchResult,
   openURL,
 } from 'mastodon/actions/search';
+import { useLazyFetchKTagsByTextQuery , useGetKTagQuery} from 'mastodon/api/k_tags';
 import { Icon } from 'mastodon/components/icon';
+import type { KTag } from 'mastodon/features/search/search_by_k_tag';
 import { useIdentity } from 'mastodon/identity_context';
 import { domain, searchEnabled } from 'mastodon/initial_state';
 import type { RecentSearch, SearchType } from 'mastodon/models/search';
+import {addKTag, removeKTag, selectAllSuggestions, selectAllSelected} from 'mastodon/slices/k_tag_search_slice';
 import { useAppSelector, useAppDispatch } from 'mastodon/store';
 import type {RootState} from 'mastodon/store';
 import { HASHTAG_REGEX } from 'mastodon/utils/hashtags';
-
-import { useLazyFetchKTagsByTextQuery , useGetKTagQuery} from 'mastodon/api/k_tags';
-import type { KTag } from 'mastodon/features/search/search_by_k_tag';
-
-import {addKTag, removeKTag, selectAllSuggestions, selectAllSelected} from 'mastodon/slices/k_tag_search_slice';
-import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
-import qs from 'qs';
 
 const messages = defineMessages({
   placeholder: { id: 'search.placeholder', defaultMessage: 'Search' },
