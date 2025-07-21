@@ -50,6 +50,10 @@ class UserSettings
     setting :software_updates, default: 'critical', in: %w(none critical patch all)
     setting :k_tag_add_relation_request, default: true
     setting :k_tag_delete_relation_request, default: true
+    setting :k_tag_add_relation_request_approved, default: true
+    setting :k_tag_add_relation_request_denied, default: true
+    setting :k_tag_delete_relation_request_approved, default: true
+    setting :k_tag_delete_relation_request_denied, default: true
   end
 
   namespace :interactions do

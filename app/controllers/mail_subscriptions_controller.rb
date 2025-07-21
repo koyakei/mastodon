@@ -30,7 +30,9 @@ class MailSubscriptionsController < ApplicationController
 
   def email_type_from_param
     case params[:type]
-    when 'follow', 'reblog', 'favourite', 'mention', 'follow_request'
+    when 'follow', 'reblog', 'favourite', 'mention', 'follow_request', 'k_tag_add_relation_request_approved',
+         'k_tag_add_relation_request_denied', 'k_tag_delete_relation_request_approved',
+         'k_tag_delete_relation_request_denied', 'k_tag_add_relation_request', 'k_tag_delete_relation_request'
       "notification_emails.#{params[:type]}"
     else
       not_found

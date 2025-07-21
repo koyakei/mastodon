@@ -13,10 +13,11 @@ class KTagsController < ApplicationController
 
   # GET /k_tags
   def index
-    @statuses = if params[:ids].any?
-                  KTag.where(id: Array(params[:ids]).uniq.map(&:to_i))
+    ids = Array(params[:ids])
+    @statuses = if ids.any?
+                  KTag.where(id: ids.uniq.map(&:to_i))
                 else
-                  KTag.limit(CONTEXT_LIMIT)
+                  []
                 end
     render json: @statuses, each_serializer: REST::KTagSerializer
   end
