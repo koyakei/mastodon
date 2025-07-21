@@ -143,15 +143,13 @@ class NavigationPanel extends Component {
             {banner}
           </div>
         }
-        <div>
-          <Link to='/k_tags/new'>タグの登録</Link>
-        </div>
         <div className='navigation-panel__menu'>
           {signedIn && (
             <>
               <ColumnLink transparent to='/home' icon='home' iconComponent={HomeIcon} activeIconComponent={HomeActiveIcon} text={intl.formatMessage(messages.home)} />
               <NotificationsLink />
               <FollowRequestsLink />
+              <Link to='/k_tags/new' target="_blank" rel="noopener noreferrer" className='column-link'>タグの登録</Link>
             </>
           )}
 
