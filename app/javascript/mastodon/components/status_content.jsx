@@ -109,7 +109,7 @@ class StatusContent extends PureComponent {
         .map(it => ({
           id: it.get('k_tag_id'),
           name: it.get('k_tag').get('name'),
-          state: (it.get?.('k_tag_delete_relation_requests') ?? false) ?  TAG_STATES.ADDED  : TAG_STATES.DELETE_REQUESTED,
+          state: (it.get?.('k_tag_delete_relation_requests').size > 0) ?  TAG_STATES.DELETE_REQUESTED : TAG_STATES.ADDED,
           statusId: it.get('status_id'),
           isOwned: it.get('is_owned'),
           kTagRelationId: it.get('id')

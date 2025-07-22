@@ -26,6 +26,7 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
       k_tag_id: api_v1_k_tag_delete_relation_request_params[:k_tag_id],
       status_id: api_v1_k_tag_delete_relation_request_params[:status_id]
     )
+    logger.info "dadsfaKTagRelation: #{k_tag_relation.inspect}"
     if k_tag_relation.nil?
       render json: { error: 'KTagRelation not found' }, status: 404
     elsif k_tag_relation&.account_id == current_user&.account_id
@@ -43,7 +44,8 @@ class Api::V1::KTagDeleteRelationRequestsController < Api::BaseController
       end
     else
       # 他人の所有しているタグだった場合リクエストを送る　通知
-      api_v1_k_tag_delete_relation_request = KTagDeleteRelationRequest.new(api_v1_k_tag_delete_relation_request_params.merge(requester_id: current_user.account_id))
+      api_v1_k_tag_delete_relation_request = KTagDeleteRelationRequest.new(params
+      .permit(:request_comment, :review_comment).merge(requester_id: current_user.account_id, k_tag_relation_id: k_tag_relation.id))
       if api_v1_k_tag_delete_relation_request.save
         UpdateStatusService.new.call(
           k_tag_relation.status,

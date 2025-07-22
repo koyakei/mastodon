@@ -27,7 +27,7 @@ export const kTagsApiSlice = createApi({
       transformResponse: (response: ApiKTagJSON[] ) :KTag[] => {
         return response.map((kTag) => (
           {
-          id: kTag.id as number, // Convert string ID to number
+          id: kTag.id, // Convert string ID to number
           name: kTag.name,
           isOwned: false, // Assuming isOwned is false by default, adjust as needed
         }

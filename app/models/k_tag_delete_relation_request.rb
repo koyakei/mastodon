@@ -13,12 +13,12 @@
 #  updated_at        :datetime         not null
 #
 class KTagDeleteRelationRequest < ApplicationRecord
-  belongs_to :k_tag_relation, optional: true
+  belongs_to :k_tag_relation
   belongs_to :requester, class_name: 'Account'
   has_many :notifications, as: :activity, dependent: :destroy
   scope :owned_requests, ->(account_id) { where(account_id: account_id) }
   validates :k_tag_relation_id, uniqueness: { scope: :requester_id }
-  around_create { update_column(:k_tag_relation_id_backup, k_tag_relation_id) }
+  # around_create { update_column(:k_tag_relation_id_backup, k_tag_relation_id) }
   enum :request_status, {
     not_decided: 0,
     approved: 1,

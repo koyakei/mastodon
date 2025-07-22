@@ -18,6 +18,6 @@ class REST::KTagDeleteRelationRequestSerializer < ActiveModel::Serializer
   end
 
   def is_owned
-    current_user.account_id == account_id
+    current_user.account_id == requester_id
   end
 end
